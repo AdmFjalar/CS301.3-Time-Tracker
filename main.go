@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
@@ -16,13 +18,15 @@ type User struct {
 }
 
 type TimeStamp struct {
-	Day       int
-	Month     int
-	Year      int
-	Hour      int
-	Minute    int
-	Second    int
-	StampType string
+	UserID      int
+	TimeStampID int
+	Day         int
+	Month       int
+	Year        int
+	Hour        int
+	Minute      int
+	Second      int
+	StampType   string
 }
 
 func main() {
@@ -36,9 +40,65 @@ func main() {
 	PORT := os.Getenv("PORT")
 
 	users := []User{}
+	timestamps := []TimeStamp{}
 
-	app.Get("/", func(c *fiber.Ctx) error { // Get all users
-		return c.Status(200).JSON(users)
+	// TIME STAMP API
+
+	// GET ALL TIME STAMPS OF SPECIFIC USER
+
+	app.Get("/api/users/:id/timestamps", func(c *fiber.Ctx) error {
+
+		userTimestamps := []TimeStamp{}
+		for _, timestamp := range timestamps { // Loops through all timestamps, ignores index and accesses value in the timestamps array with timestamp
+			if fmt.Sprint(timestamp.UserID) == c.Params("id") {
+				userTimestamps = append(userTimestamps, timestamp)
+			}
+		}
+
+		if len(userTimestamps) > 0 {
+			return c.Status(200).JSON(userTimestamps)
+		}
+
+		return c.Status(404).JSON(fiber.Map{"error": "User not found or no timestamps registered to user"})
+	})
+
+	// CREATE TIME STAMP
+
+	app.Post("/api/users/:id/timestamps/:type", func(c *fiber.Ctx) error {
+
+		timestamp := TimeStamp{}
+		if err := c.BodyParser(&timestamp); err != nil {
+			return err
+		}
+
+		timestamp.Day = time.Now().Day()
+		timestamp.Month = int(time.Now().Month())
+		timestamp.Year = time.Now().Year()
+		timestamp.Hour = time.Now().Hour()
+		timestamp.Minute = time.Now().Minute()
+		timestamp.Second = time.Now().Second()
+		timestamp.StampType = c.Params("type")
+
+		if timestamp.Day == 0 || timestamp.Month == 0 || timestamp.Year == 0 || timestamp.Hour == 0 || timestamp.Minute == 0 || timestamp.Second == 0 || timestamp.StampType == "" {
+			return c.Status(400).JSON(fiber.Map{"error": "Day, month, year, hour, minute, second and stamp type are required"})
+		}
+
+		timestamp.UserID, err = strconv.Atoi(c.Params("id"))
+		timestamp.TimeStampID = len(timestamps) + 1
+		timestamps = append(timestamps, timestamp)
+		return c.Status(201).JSON(timestamp)
+	})
+
+	// USER API
+
+	app.Get("/api/users/:id", func(c *fiber.Ctx) error { // Get user
+		id := c.Params("id")
+		for _, user := range users {
+			if fmt.Sprint(user.ID) == id {
+				return c.Status(200).JSON(user)
+			}
+		}
+		return c.Status(404).JSON(fiber.Map{"error": "User not found"})
 	})
 
 	app.Post("/api/users", func(c *fiber.Ctx) error { // Create user
