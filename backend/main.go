@@ -12,21 +12,21 @@ import (
 )
 
 type User struct {
-	ID          int
-	AccountType string
+	ID          uint32
+	AccountType uint8
 	Email       string
 }
 
 type TimeStamp struct {
-	UserID      int
-	TimeStampID int
-	Day         int
-	Month       int
-	Year        int
-	Hour        int
-	Minute      int
-	Second      int
-	StampType   string
+	StampType   uint8
+	UserID      uint32
+	TimeStampID uint32
+	Year        int16
+	Month       uint8
+	Day         uint8
+	Hour        uint8
+	Minute      uint8
+	Second      uint8
 }
 
 func main() {
@@ -71,21 +71,28 @@ func main() {
 			return err
 		}
 
-		timestamp.Day = time.Now().Day()
-		timestamp.Month = int(time.Now().Month())
-		timestamp.Year = time.Now().Year()
-		timestamp.Hour = time.Now().Hour()
-		timestamp.Minute = time.Now().Minute()
-		timestamp.Second = time.Now().Second()
-		timestamp.StampType = c.Params("type")
+		timestamp.Year = int16(time.Now().Year())
+		timestamp.Month = uint8(time.Now().Month())
+		timestamp.Day = uint8(time.Now().Day())
+		timestamp.Hour = uint8(time.Now().Hour())
+		timestamp.Minute = uint8(time.Now().Minute())
+		timestamp.Second = uint8(time.Now().Second())
+
+		var stampType int
+		stampType, err = strconv.Atoi(c.Params("type"))
+		timestamp.StampType = uint8(stampType)
 
 		if timestamp.Day == 0 || timestamp.Month == 0 || timestamp.Year == 0 || timestamp.Hour == 0 || timestamp.Minute == 0 || timestamp.Second == 0 || timestamp.StampType == "" {
 			return c.Status(400).JSON(fiber.Map{"error": "Day, month, year, hour, minute, second and stamp type are required"})
 		}
 
-		timestamp.UserID, err = strconv.Atoi(c.Params("id"))
-		timestamp.TimeStampID = len(timestamps) + 1
+		var userID int
+		userID, err = strconv.Atoi(c.Params("id"))
+		timestamp.UserID = uint32(userID)
+
+		timestamp.TimeStampID = uint32(len(timestamps) + 1)
 		timestamps = append(timestamps, timestamp)
+
 		return c.Status(201).JSON(timestamp)
 	})
 
