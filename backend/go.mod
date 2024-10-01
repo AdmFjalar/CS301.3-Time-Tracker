@@ -1,8 +1,14 @@
-module github.com/AdmFjalar/CS301.3-Time-Tracker
+module github.com/AdmFjalar/CS301.3-Time-Tracker/backend
 
 go 1.23.0
 
 require github.com/gofiber/fiber/v2 v2.52.5
+
+require (
+	filippo.io/edwards25519 v1.1.0 // indirect
+	github.com/go-sql-driver/mysql v1.8.1 // indirect
+	github.com/gorilla/mux v1.8.1 // indirect
+)
 
 require (
 	github.com/andybalholm/brotli v1.0.5 // indirect
