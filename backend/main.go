@@ -82,7 +82,7 @@ func main() {
 		stampType, err = strconv.Atoi(c.Params("type"))
 		timestamp.StampType = uint8(stampType)
 
-		if timestamp.Day == 0 || timestamp.Month == 0 || timestamp.Year == 0 || timestamp.Hour == 0 || timestamp.Minute == 0 || timestamp.Second == 0 || timestamp.StampType == "" {
+		if timestamp.Day == 0 || timestamp.Month == 0 || timestamp.Year == 0 || timestamp.StampType == 0 {
 			return c.Status(400).JSON(fiber.Map{"error": "Day, month, year, hour, minute, second and stamp type are required"})
 		}
 
@@ -113,11 +113,11 @@ func main() {
 		if err := c.BodyParser(user); err != nil {
 			return err
 		}
-		if user.AccountType == "" || user.Email == "" {
+		if user.AccountType == 0 || user.Email == "" {
 			return c.Status(400).JSON(fiber.Map{"error": "User email and account type is required"})
 		}
 
-		user.ID = len(users) + 1
+		user.ID = uint32(len(users) + 1)
 		users = append(users, *user)
 
 		return c.Status(201).JSON(user)
@@ -128,7 +128,7 @@ func main() {
 
 		for i, user := range users {
 			if fmt.Sprint(user.ID) == id {
-				users[i].AccountType = "employee"
+				users[i].AccountType = 1
 				users[i].Email = "email@example.com"
 				return c.Status(200).JSON(users[i])
 			}
