@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 
+
 class Classprops extends Component {
     render() {
         return (
@@ -10,5 +11,6 @@ class Classprops extends Component {
         );
     }
 }
+
 
 export default Classprops;

@@ -2,6 +2,7 @@ import React from "react";
 import Classprops from "./Classprops";
 import Functionprops from './Functionprops';
 
+
 class Timetracker extends React.Component {
     render(){
         return (
@@ -10,7 +11,7 @@ class Timetracker extends React.Component {
                     <p>Child Component</p>
                     </Classprops>
                 <Classprops name="Employer">
-                    <button>Click</button> 
+                    <button>Click</button>
                     </Classprops>
                 <Classprops name="Employee"/>
                 <Functionprops name="Admin"></Functionprops>
@@ -18,5 +19,6 @@ class Timetracker extends React.Component {
         );
     }
 }
+
 
 export default Timetracker;
