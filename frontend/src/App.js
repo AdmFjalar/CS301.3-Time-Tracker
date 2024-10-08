@@ -1,25 +1,22 @@
-import logo from './logo.svg';
+import React from 'react';
+import Sidebar from './components/Sidebar';
+import UpcomingShifts from './components/UpcomingShifts';
+import Overview from './components/Overview';
 import './App.css';
 
-function App() {
+const App = () => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="app-container">
+      <Sidebar />
+      <div className="main-content">
+        <h2>Welcome back, Angela</h2>
+        <div className="shifts-and-overview">
+          <UpcomingShifts />
+          <Overview />
+        </div>
+      </div>
     </div>
   );
-}
+};
 
 export default App;
