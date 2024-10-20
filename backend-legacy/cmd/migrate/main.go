@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/AdmFjalar/CS301.3-Time-Tracker/backend/config"
+	config "github.com/AdmFjalar/CS301.3-Time-Tracker/backend/config"
 	"github.com/AdmFjalar/CS301.3-Time-Tracker/backend/db"
 	mysqlCfg "github.com/go-sql-driver/mysql"
 	"github.com/golang-migrate/migrate"

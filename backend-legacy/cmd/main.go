@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/AdmFjalar/CS301.3-Time-Tracker/backend/cmd/api"
-	"github.com/AdmFjalar/CS301.3-Time-Tracker/backend/config"
+	config "github.com/AdmFjalar/CS301.3-Time-Tracker/backend/config"
 	"github.com/AdmFjalar/CS301.3-Time-Tracker/backend/db"
 	"github.com/go-sql-driver/mysql"
 )
