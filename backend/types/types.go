@@ -16,3 +16,17 @@ type TimeStamp struct {
 	Minute       uint8  `json:"minute"`
 	Second       uint8  `json:"second"`
 }
+
+type User struct {
+	ID        uint32 `json:"id"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Email     string `json:"email"`
+	Password  string `json:"password"`
+	CreatedAt string `json:"created_at"`
+}
+
+type UserStore interface {
+	GetUserByEmail(email string) (*User, error)
+	CreateTimestamp(timestamp TimeStamp) error
+}
