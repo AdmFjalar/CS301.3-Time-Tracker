@@ -7,6 +7,10 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/AdmFjalar/CS301.3-Time-Tracker/backend/service/user"
+	"github.com/AdmFjalar/CS301.3-Time-Tracker/backend/service/timestamp"
+	"github.com/AdmFjalar/CS301.3-Time-Tracker/backend/db"
+	"github.com/AdmFjalar/CS301.3-Time-Tracker/backend/config"
 )
 
 type application struct {
@@ -28,11 +32,11 @@ func (app *application) mount() http.Handler {
 
 	r.Route("/v1", func(r chi.Router) {
 		r.Get("/health", app.healthCheckHandler)
+		r.Post("/login", app.loginHandler)
+		r.Post("/logout", app.logoutHandler)
+		r.Post("/timestamps", app.createTimestampHandler)
+		r.Get("/timestamps", app.getAllTimestampsHandler)
 	})
-	// posts
-
-	// users
-	// auth
 
 	return r
 }
@@ -49,4 +53,63 @@ func (app *application) run(mux http.Handler) error {
 	log.Printf("server has started at %s", app.config.addr)
 
 	return srv.ListenAndServe()
+}
+
+func (app *application) loginHandler(w http.ResponseWriter, r *http.Request) {
+	var payload types.LoginUserPayload
+	if err := utils.ParseJSON(r, &payload); err != nil {
+		utils.WriteError(w, http.StatusBadRequest, err)
+		return
+	}
+
+	user, err := h.store.GetUserByEmail(payload.Email)
+	if err != nil {
+		utils.WriteError(w, http.StatusUnauthorized, fmt.Errorf("invalid email or password"))
+		return
+	}
+
+	if !auth.CheckPasswordHash(payload.Password, user.Password) {
+		utils.WriteError(w, http.StatusUnauthorized, fmt.Errorf("invalid email or password"))
+		return
+	}
+
+	token, err := auth.GenerateJWT(user.ID)
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusOK, map[string]string{"token": token})
+}
+
+func (app *application) logoutHandler(w http.ResponseWriter, r *http.Request) {
+	// Implement logout logic here
+	w.Write([]byte("logout"))
+}
+
+func (app *application) createTimestampHandler(w http.ResponseWriter, r *http.Request) {
+	var timestamp types.TimeStamp
+	if err := utils.ParseJSON(r, &timestamp); err != nil {
+		utils.WriteError(w, http.StatusBadRequest, err)
+		return
+	}
+
+	timestamp.Year = int16(time.Now().Year())
+	timestamp.Month = uint8(time.Now().Month())
+	timestamp.Day = uint8(time.Now().Day())
+	timestamp.Hour = uint8(time.Now().Hour())
+	timestamp.Minute = uint8(time.Now().Minute())
+	timestamp.Second = uint8(time.Now().Second())
+
+	if err := h.store.CreateTimestamp(timestamp); err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusCreated, timestamp)
+}
+
+func (app *application) getAllTimestampsHandler(w http.ResponseWriter, r *http.Request) {
+	// Implement logic to get all timestamps here
+	w.Write([]byte("all timestamps"))
 }

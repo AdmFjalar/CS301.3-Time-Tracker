@@ -1,10 +1,18 @@
 package main
 
-import "log"
+import (
+	"log"
+	"os"
+)
 
 func main() {
+	addr := os.Getenv("SERVER_ADDRESS")
+	if addr == "" {
+		addr = ":8080"
+	}
+
 	cfg := config{
-		addr: ":8080",
+		addr: addr,
 	}
 	app := &application{
 		config: cfg,
