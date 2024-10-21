@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/AdmFjalar/CS301.3-Time-Tracker/backend/service/auth"
-	"github.com/AdmFjalar/CS301.3-Time-Tracker/backend/types"
-	"github.com/AdmFjalar/CS301.3-Time-Tracker/backend/utils"
+	"github.com/AdmFjalar/CS301.3-Time-Tracker/service/auth"
+	"github.com/AdmFjalar/CS301.3-Time-Tracker/types"
+	"github.com/AdmFjalar/CS301.3-Time-Tracker/utils"
 	"github.com/go-playground/validator"
 	"github.com/gorilla/mux"
 	"net/http"

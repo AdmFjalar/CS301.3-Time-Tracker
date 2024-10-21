@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/AdmFjalar/CS301.3-Time-Tracker/backend/types"
+	"github.com/AdmFjalar/CS301.3-Time-Tracker/types"
 )
 
 type Store struct {

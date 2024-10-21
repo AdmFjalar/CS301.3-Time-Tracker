@@ -7,18 +7,19 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/AdmFjalar/CS301.3-Time-Tracker/backend/service/user"
-	"github.com/AdmFjalar/CS301.3-Time-Tracker/backend/service/timestamp"
-	"github.com/AdmFjalar/CS301.3-Time-Tracker/backend/db"
-	"github.com/AdmFjalar/CS301.3-Time-Tracker/backend/config"
-	"github.com/AdmFjalar/CS301.3-Time-Tracker/backend/utils"
-	"github.com/AdmFjalar/CS301.3-Time-Tracker/backend/types"
-	"github.com/AdmFjalar/CS301.3-Time-Tracker/backend/service/auth"
+	"github.com/AdmFjalar/CS301.3-Time-Tracker/service/user"
+	"github.com/AdmFjalar/CS301.3-Time-Tracker/service/timestamp"
+	"github.com/AdmFjalar/CS301.3-Time-Tracker/db"
+	"github.com/AdmFjalar/CS301.3-Time-Tracker/config"
+	"github.com/AdmFjalar/CS301.3-Time-Tracker/utils"
+	"github.com/AdmFjalar/CS301.3-Time-Tracker/types"
+	"github.com/AdmFjalar/CS301.3-Time-Tracker/service/auth"
 	"fmt"
 )
 
 type application struct {
 	config config
+	store  *user.Store
 }
 
 type config struct {
@@ -66,7 +67,7 @@ func (app *application) loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := h.store.GetUserByEmail(payload.Email)
+	user, err := app.store.GetUserByEmail(payload.Email)
 	if err != nil {
 		utils.WriteError(w, http.StatusUnauthorized, fmt.Errorf("invalid email or password"))
 		return
@@ -105,7 +106,7 @@ func (app *application) createTimestampHandler(w http.ResponseWriter, r *http.Re
 	timestamp.Minute = uint8(time.Now().Minute())
 	timestamp.Second = uint8(time.Now().Second())
 
-	if err := h.store.CreateTimestamp(timestamp); err != nil {
+	if err := app.store.CreateTimestamp(timestamp); err != nil {
 		utils.WriteError(w, http.StatusInternalServerError, err)
 		return
 	}
