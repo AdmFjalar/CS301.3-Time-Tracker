@@ -8,6 +8,8 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// Config struct holds the configuration values for the application.
+// It includes database credentials, JWT secret, server address, etc.
 type Config struct {
 	DBUser                 string
 	DBPassword             string
@@ -20,6 +22,8 @@ type Config struct {
 
 var Envs = initConfig()
 
+// initConfig initializes the configuration by loading environment variables
+// and setting default values if the environment variables are not set.
 func initConfig() Config {
 	godotenv.Load()
 
@@ -34,6 +38,8 @@ func initConfig() Config {
 	}
 }
 
+// getEnv retrieves the value of the environment variable named by the key.
+// If the variable is not present, it returns the fallback value.
 func getEnv(key, fallback string) string {
 	if value, ok := os.LookupEnv(key); ok {
 		return value
@@ -42,6 +48,9 @@ func getEnv(key, fallback string) string {
 	return fallback
 }
 
+// getEnvAsInt retrieves the value of the environment variable named by the key
+// and converts it to an int64. If the variable is not present or cannot be
+// converted, it returns the fallback value.
 func getEnvAsInt(key string, fallback int64) int64 {
 	if value, ok := os.LookupEnv(key); ok {
 		i, err := strconv.ParseInt(value, 10, 64)

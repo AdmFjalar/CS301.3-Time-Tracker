@@ -5,6 +5,8 @@ import (
 	"os"
 )
 
+// main is the entry point of the application. It initializes the configuration,
+// creates an application instance, mounts the routes, and starts the server.
 func main() {
 	addr := os.Getenv("SERVER_ADDRESS")
 	if addr == "" {

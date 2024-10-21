@@ -87,7 +87,8 @@ func (app *application) loginHandler(w http.ResponseWriter, r *http.Request) {
 
 func (app *application) logoutHandler(w http.ResponseWriter, r *http.Request) {
 	// Implement logout logic here
-	w.Write([]byte("logout"))
+	// Clear the JWT token or invalidate the session
+	utils.WriteJSON(w, http.StatusOK, map[string]string{"message": "logout successful"})
 }
 
 func (app *application) createTimestampHandler(w http.ResponseWriter, r *http.Request) {
@@ -113,6 +114,11 @@ func (app *application) createTimestampHandler(w http.ResponseWriter, r *http.Re
 }
 
 func (app *application) getAllTimestampsHandler(w http.ResponseWriter, r *http.Request) {
-	// Implement logic to get all timestamps here
-	w.Write([]byte("all timestamps"))
+	timestamps, err := app.store.GetAllTimestamps()
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusOK, timestamps)
 }

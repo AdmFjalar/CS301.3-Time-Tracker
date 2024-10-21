@@ -13,6 +13,8 @@ type Claims struct {
 
 var jwtKey = []byte("my_secret_key")
 
+// GenerateJWT generates a JWT token for the given user ID.
+// The token expires after 24 hours.
 func GenerateJWT(userID int) (string, error) {
 	expirationTime := time.Now().Add(24 * time.Hour)
 	claims := &Claims{
@@ -31,6 +33,7 @@ func GenerateJWT(userID int) (string, error) {
 	return tokenString, nil
 }
 
+// ValidateJWT validates the given JWT token and returns the claims if the token is valid.
 func ValidateJWT(tokenString string) (*Claims, error) {
 	claims := &Claims{}
 
@@ -49,6 +52,7 @@ func ValidateJWT(tokenString string) (*Claims, error) {
 	return claims, nil
 }
 
+// CheckPasswordHash compares the given password with the hashed password and returns true if they match.
 func CheckPasswordHash(password, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil

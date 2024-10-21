@@ -34,3 +34,30 @@
 
 5. **Access the server:**
    The server will be running at `http://localhost:8080`. You can use tools like `curl` or Postman to interact with the API endpoints.
+
+## Running Tests
+
+1. **Run unit tests:**
+   ```sh
+   go test ./...
+   ```
+
+2. **Run integration tests:**
+   ```sh
+   go test -tags=integration ./...
+   ```
+
+## Deploying the Application
+
+1. **Build the application:**
+   ```sh
+   go build -o bin/app cmd/api/main.go
+   ```
+
+2. **Run the built application:**
+   ```sh
+   ./bin/app
+   ```
+
+3. **Deploy to a server:**
+   Copy the built application and the `.env` file to your server and run the application as described above.
