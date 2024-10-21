@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"time"
 
+	"net/http"
+
 	"github.com/AdmFjalar/CS301.3-Time-Tracker/service/auth"
 	"github.com/AdmFjalar/CS301.3-Time-Tracker/types"
 	"github.com/AdmFjalar/CS301.3-Time-Tracker/utils"
-	"github.com/go-playground/validator"
 	"github.com/gorilla/mux"
-	"net/http"
 )
 
 type Handler struct {

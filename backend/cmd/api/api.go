@@ -5,16 +5,14 @@ import (
 	"net/http"
 	"time"
 
+	"fmt"
+
+	"github.com/AdmFjalar/CS301.3-Time-Tracker/service/auth"
+	"github.com/AdmFjalar/CS301.3-Time-Tracker/service/user"
+	"github.com/AdmFjalar/CS301.3-Time-Tracker/types"
+	"github.com/AdmFjalar/CS301.3-Time-Tracker/utils"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/AdmFjalar/CS301.3-Time-Tracker/service/user"
-	"github.com/AdmFjalar/CS301.3-Time-Tracker/service/timestamp"
-	"github.com/AdmFjalar/CS301.3-Time-Tracker/db"
-	"github.com/AdmFjalar/CS301.3-Time-Tracker/config"
-	"github.com/AdmFjalar/CS301.3-Time-Tracker/utils"
-	"github.com/AdmFjalar/CS301.3-Time-Tracker/types"
-	"github.com/AdmFjalar/CS301.3-Time-Tracker/service/auth"
-	"fmt"
 )
 
 type application struct {

@@ -2,7 +2,6 @@ package timestamp
 
 import (
 	"database/sql"
-	"time"
 
 	"github.com/AdmFjalar/CS301.3-Time-Tracker/types"
 )
