@@ -133,6 +133,27 @@ func (s *Store) CreateTimestamp(timestamp types.TimeStamp) error {
 	return err
 }
 
+// GetAllTimestamps retrieves all timestamps from the database.
+func (s *Store) GetAllTimestamps() ([]types.TimeStamp, error) {
+	rows, err := s.db.Query("SELECT * FROM timestamps")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var timestamps []types.TimeStamp
+	for rows.Next() {
+		var timestamp types.TimeStamp
+		err := rows.Scan(&timestamp.StampType, &timestamp.UserID, &timestamp.TimeStampID, &timestamp.Year, &timestamp.Month, &timestamp.Day, &timestamp.Hour, &timestamp.Minute, &timestamp.Second)
+		if err != nil {
+			return nil, err
+		}
+		timestamps = append(timestamps, timestamp)
+	}
+
+	return timestamps, nil
+}
+
 // ScanRowIntoUser scans a database row into a User struct.
 func ScanRowIntoUser(rows *sql.Rows) (*types.User, error) {
 	user := new(types.User)
