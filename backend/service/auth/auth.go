@@ -2,7 +2,7 @@ package auth
 
 import (
 	"time"
-
+	"golang.org/x/crypto/bcrypt"
 	"github.com/dgrijalva/jwt-go"
 )
 
@@ -47,4 +47,9 @@ func ValidateJWT(tokenString string) (*Claims, error) {
 	}
 
 	return claims, nil
+}
+
+func CheckPasswordHash(password, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
 }
