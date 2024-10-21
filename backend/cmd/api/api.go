@@ -12,6 +12,9 @@ import (
 	"github.com/AdmFjalar/CS301.3-Time-Tracker/backend/db"
 	"github.com/AdmFjalar/CS301.3-Time-Tracker/backend/config"
 	"github.com/AdmFjalar/CS301.3-Time-Tracker/backend/utils"
+	"github.com/AdmFjalar/CS301.3-Time-Tracker/backend/types"
+	"github.com/AdmFjalar/CS301.3-Time-Tracker/backend/service/auth"
+	"fmt"
 )
 
 type application struct {
