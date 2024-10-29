@@ -131,8 +131,8 @@ func (app *application) mount() http.Handler {
 
 				r.Patch("/", app.checkTimestampOwnership("manager", app.updateTimestampHandler))
 				r.Delete("/", app.checkTimestampOwnership("manager", app.deleteTimestampHandler))
-		// 	})
-		// })
+			})
+		})
 
 		r.Route("/users", func(r chi.Router) {
 			r.Put("/activate/{token}", app.activateUserHandler)
