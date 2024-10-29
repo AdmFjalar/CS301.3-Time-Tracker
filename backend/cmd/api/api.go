@@ -1,124 +1,209 @@
 package main
 
 import (
-	"log"
+	"context"
+	"errors"
+	"expvar"
+	"fmt"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
-	"fmt"
-
-	"github.com/AdmFjalar/CS301.3-Time-Tracker/service/auth"
-	"github.com/AdmFjalar/CS301.3-Time-Tracker/service/user"
-	"github.com/AdmFjalar/CS301.3-Time-Tracker/types"
-	"github.com/AdmFjalar/CS301.3-Time-Tracker/utils"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
+	httpSwagger "github.com/swaggo/http-swagger"
+	"go.uber.org/zap"
+
+	"github.com/AdmFjalar/CS301.3-Time-Tracker/docs"
+	"github.com/AdmFjalar/CS301.3-Time-Tracker/internal/auth"
+	"github.com/AdmFjalar/CS301.3-Time-Tracker/internal/env"
+	"github.com/AdmFjalar/CS301.3-Time-Tracker/internal/mailer"
+	"github.com/AdmFjalar/CS301.3-Time-Tracker/internal/ratelimiter"
+	"github.com/AdmFjalar/CS301.3-Time-Tracker/internal/store"
+	"github.com/AdmFjalar/CS301.3-Time-Tracker/internal/store/cache"
 )
 
 type application struct {
-	config config
-	store  *user.Store
+	config        config
+	store         store.Storage
+	cacheStorage  cache.Storage
+	logger        *zap.SugaredLogger
+	mailer        mailer.Client
+	authenticator auth.Authenticator
+	rateLimiter   ratelimiter.Limiter
 }
 
 type config struct {
-	addr string
+	addr        string
+	db          dbConfig
+	env         string
+	apiURL      string
+	mail        mailConfig
+	frontendURL string
+	auth        authConfig
+	redisCfg    redisConfig
+	rateLimiter ratelimiter.Config
+}
+
+type redisConfig struct {
+	addr    string
+	pw      string
+	db      int
+	enabled bool
+}
+
+type authConfig struct {
+	basic basicConfig
+	token tokenConfig
+}
+
+type tokenConfig struct {
+	secret string
+	exp    time.Duration
+	iss    string
+}
+
+type basicConfig struct {
+	user string
+	pass string
+}
+
+type mailConfig struct {
+	sendGrid  sendGridConfig
+	fromEmail string
+	exp       time.Duration
+}
+
+type sendGridConfig struct {
+	apiKey string
+}
+
+type dbConfig struct {
+	addr         string
+	maxOpenConns int
+	maxIdleConns int
+	maxIdleTime  string
 }
 
 func (app *application) mount() http.Handler {
 	r := chi.NewRouter()
-	r.Use(middleware.Recoverer)
-	r.Use(middleware.Logger)
-	r.Use(middleware.RealIP)
-	r.Use(middleware.RequestID)
 
+	r.Use(middleware.RequestID)
+	r.Use(middleware.RealIP)
+	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
+	r.Use(cors.Handler(cors.Options{
+		AllowedOrigins:   []string{env.GetString("CORS_ALLOWED_ORIGIN", "http://localhost:5174")},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+		ExposedHeaders:   []string{"Link"},
+		AllowCredentials: false,
+		MaxAge:           300, // Maximum value not ignored by any of major browsers
+	}))
+
+	if app.config.rateLimiter.Enabled {
+		r.Use(app.RateLimiterMiddleware)
+	}
+
+	// Set a timeout value on the request context (ctx), that will signal
+	// through ctx.Done() that the request has timed out and further
+	// processing should be stopped.
 	r.Use(middleware.Timeout(60 * time.Second))
 
 	r.Route("/v1", func(r chi.Router) {
+		// Operations
 		r.Get("/health", app.healthCheckHandler)
-		r.Post("/login", app.loginHandler)
-		r.Post("/logout", app.logoutHandler)
-		r.Post("/timestamps", app.createTimestampHandler)
-		r.Get("/timestamps", app.getAllTimestampsHandler)
+		r.With(app.BasicAuthMiddleware()).Get("/debug/vars", expvar.Handler().ServeHTTP)
+
+		docsURL := fmt.Sprintf("%s/swagger/doc.json", app.config.addr)
+		r.Get("/swagger/*", httpSwagger.Handler(httpSwagger.URL(docsURL)))
+
+		r.Route("/timestamps", func(r chi.Router) {
+			r.Use(app.AuthTokenMiddleware)
+			r.Post("/", app.createTimestampHandler)
+
+			r.Route("/{timestampID}", func(r chi.Router) {
+				r.Use(app.timestampsContextMiddleware)
+				r.Get("/", app.getAllTimestampsHandler)
+
+				r.Patch("/", app.checkTimestampOwnership("manager", app.updateTimestampHandler))
+				r.Delete("/", app.checkTimestampOwnership("manager", app.deleteTimestampHandler))
+		// 	})
+		// })
+
+		r.Route("/users", func(r chi.Router) {
+			r.Put("/activate/{token}", app.activateUserHandler)
+
+			r.Route("/{userID}", func(r chi.Router) {
+				r.Use(app.AuthTokenMiddleware)
+
+				r.Get("/", app.getUserHandler)
+				// r.Put("/follow", app.followUserHandler)
+				// r.Put("/unfollow", app.unfollowUserHandler)
+			})
+
+			// r.Group(func(r chi.Router) {
+			// 	r.Use(app.AuthTokenMiddleware)
+			// 	// r.Get("/feed", app.getUserFeedHandler)
+			// })
+		})
+
+		// Public routes
+		r.Route("/authentication", func(r chi.Router) {
+			r.Post("/user", app.registerUserHandler)
+			r.Post("/token", app.createTokenHandler)
+		})
 	})
 
 	return r
 }
 
 func (app *application) run(mux http.Handler) error {
+	// Docs
+	docs.SwaggerInfo.Version = version
+	docs.SwaggerInfo.Host = app.config.apiURL
+	docs.SwaggerInfo.BasePath = "/v1"
+
 	srv := &http.Server{
 		Addr:         app.config.addr,
 		Handler:      mux,
-		WriteTimeout: time.Second * 20,
+		WriteTimeout: time.Second * 30,
 		ReadTimeout:  time.Second * 10,
 		IdleTimeout:  time.Minute,
 	}
 
-	log.Printf("server has started at %s", app.config.addr)
+	shutdown := make(chan error)
 
-	return srv.ListenAndServe()
-}
+	go func() {
+		quit := make(chan os.Signal, 1)
 
-func (app *application) loginHandler(w http.ResponseWriter, r *http.Request) {
-	var payload types.LoginUserPayload
-	if err := utils.ParseJSON(r, &payload); err != nil {
-		utils.WriteError(w, http.StatusBadRequest, err)
-		return
+		signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+		s := <-quit
+
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		app.logger.Infow("signal caught", "signal", s.String())
+
+		shutdown <- srv.Shutdown(ctx)
+	}()
+
+	app.logger.Infow("server has started", "addr", app.config.addr, "env", app.config.env)
+
+	err := srv.ListenAndServe()
+	if !errors.Is(err, http.ErrServerClosed) {
+		return err
 	}
 
-	user, err := app.store.GetUserByEmail(payload.Email)
+	err = <-shutdown
 	if err != nil {
-		utils.WriteError(w, http.StatusUnauthorized, fmt.Errorf("invalid email or password"))
-		return
+		return err
 	}
 
-	if !auth.CheckPasswordHash(payload.Password, user.Password) {
-		utils.WriteError(w, http.StatusUnauthorized, fmt.Errorf("invalid email or password"))
-		return
-	}
+	app.logger.Infow("server has stopped", "addr", app.config.addr, "env", app.config.env)
 
-	token, err := auth.GenerateJWT(user.ID)
-	if err != nil {
-		utils.WriteError(w, http.StatusInternalServerError, err)
-		return
-	}
-
-	utils.WriteJSON(w, http.StatusOK, map[string]string{"token": token})
-}
-
-func (app *application) logoutHandler(w http.ResponseWriter, r *http.Request) {
-	// Implement logout logic here
-	// Clear the JWT token or invalidate the session
-	utils.WriteJSON(w, http.StatusOK, map[string]string{"message": "logout successful"})
-}
-
-func (app *application) createTimestampHandler(w http.ResponseWriter, r *http.Request) {
-	var timestamp types.TimeStamp
-	if err := utils.ParseJSON(r, &timestamp); err != nil {
-		utils.WriteError(w, http.StatusBadRequest, err)
-		return
-	}
-
-	timestamp.Year = int16(time.Now().Year())
-	timestamp.Month = uint8(time.Now().Month())
-	timestamp.Day = uint8(time.Now().Day())
-	timestamp.Hour = uint8(time.Now().Hour())
-	timestamp.Minute = uint8(time.Now().Minute())
-	timestamp.Second = uint8(time.Now().Second())
-
-	if err := app.store.CreateTimestamp(timestamp); err != nil {
-		utils.WriteError(w, http.StatusInternalServerError, err)
-		return
-	}
-
-	utils.WriteJSON(w, http.StatusCreated, timestamp)
-}
-
-func (app *application) getAllTimestampsHandler(w http.ResponseWriter, r *http.Request) {
-	timestamps, err := app.store.GetAllTimestamps()
-	if err != nil {
-		utils.WriteError(w, http.StatusInternalServerError, err)
-		return
-	}
-
-	utils.WriteJSON(w, http.StatusOK, timestamps)
+	return nil
 }
