@@ -1,0 +1,2 @@
+CREATE DATABASE thymeflies IF NOT EXISTS;
+CREATE USER admin WITH PASSWORD 'securepassword';

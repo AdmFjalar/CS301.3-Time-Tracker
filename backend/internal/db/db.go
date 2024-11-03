@@ -7,7 +7,7 @@ import (
 )
 
 func New(addr string, maxOpenConns, maxIdleConns int, maxIdleTime string) (*sql.DB, error) {
-	db, err := sql.Open("postgres", addr)
+	db, err := sql.Open("mysql", addr)
 	if err != nil {
 		return nil, err
 	}

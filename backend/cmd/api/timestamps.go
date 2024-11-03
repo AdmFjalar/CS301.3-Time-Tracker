@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/AdmFjalar/CS301.3-Time-Tracker/internal/store"
 	"github.com/go-chi/chi/v5"
@@ -18,12 +19,7 @@ type CreateTimestampPayload struct {
 	StampType   string `json:"stamp_type"`
 	UserID      int64  `json:"user_id"`
 	TimeStampID int64  `json:"timestamp_id"`
-	Year        int    `json:"year"`
-	Month       int    `json:"month"`
-	Day         int    `json:"day"`
-	Hour        int    `json:"hour"`
-	Minute      int    `json:"minute"`
-	Second      int    `json:"second"`
+	StampTime   string `json:"stamp_time"`
 }
 
 func (app *application) createTimestampHandler(w http.ResponseWriter, r *http.Request) {
@@ -41,15 +37,17 @@ func (app *application) createTimestampHandler(w http.ResponseWriter, r *http.Re
 
 	user := getUserFromContext(r)
 
+	parsedTime, err := time.Parse(time.RFC3339, payload.StampTime)
+
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
 	timestamp := &store.Timestamp{
 		StampType: payload.StampType,
 		UserID:    user.ID,
-		Year:      payload.Year,
-		Month:     payload.Month,
-		Day:       payload.Day,
-		Hour:      payload.Hour,
-		Minute:    payload.Minute,
-		Second:    payload.Second,
+		StampTime: parsedTime,
 	}
 
 	ctx := r.Context()
@@ -100,12 +98,7 @@ func (app *application) deleteTimestampHandler(w http.ResponseWriter, r *http.Re
 
 type UpdateTimestampPayload struct {
 	StampType string `json:"stamp_type"`
-	Year      int    `json:"year"`
-	Month     int    `json:"month"`
-	Day       int    `json:"day"`
-	Hour      int    `json:"hour"`
-	Minute    int    `json:"minute"`
-	Second    int    `json:"second"`
+	StampTime string `json:"stamp_time"`
 }
 
 func (app *application) updateTimestampHandler(w http.ResponseWriter, r *http.Request) {
@@ -122,13 +115,15 @@ func (app *application) updateTimestampHandler(w http.ResponseWriter, r *http.Re
 		return
 	}
 
+	parsedTime, err := time.Parse(time.RFC3339, payload.StampTime)
+
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
 	timestamp.StampType = payload.StampType
-	timestamp.Year = payload.Year
-	timestamp.Month = payload.Month
-	timestamp.Day = payload.Day
-	timestamp.Hour = payload.Hour
-	timestamp.Minute = payload.Minute
-	timestamp.Second = payload.Second
+	timestamp.StampTime = parsedTime
 
 	ctx := r.Context()
 
