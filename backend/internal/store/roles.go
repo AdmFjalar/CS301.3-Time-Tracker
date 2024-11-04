@@ -17,7 +17,7 @@ type RoleStore struct {
 }
 
 func (s *RoleStore) GetByName(ctx context.Context, slug string) (*Role, error) {
-	query := `SELECT id, name, description, level FROM roles WHERE name = $1`
+	query := `SELECT id, name, description, level FROM roles WHERE name = ?`
 
 	role := &Role{}
 	err := s.db.QueryRowContext(ctx, query, slug).Scan(&role.ID, &role.Name, &role.Description, &role.Level)

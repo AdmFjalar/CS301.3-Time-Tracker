@@ -14,7 +14,6 @@ import (
 )
 
 type RegisterUserPayload struct {
-	Username string `json:"username" validate:"required,max=100"`
 	Email    string `json:"email" validate:"required,email,max=255"`
 	Password string `json:"password" validate:"required,min=3,max=72"`
 }
@@ -49,8 +48,7 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 	}
 
 	user := &store.User{
-		Username: payload.Username,
-		Email:    payload.Email,
+		Email: payload.Email,
 		Role: store.Role{
 			Name: "user",
 		},
@@ -75,8 +73,6 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 		switch err {
 		case store.ErrDuplicateEmail:
 			app.badRequestResponse(w, r, err)
-		case store.ErrDuplicateUsername:
-			app.badRequestResponse(w, r, err)
 		default:
 			app.internalServerError(w, r, err)
 		}
@@ -91,15 +87,13 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 
 	isProdEnv := app.config.env == "production"
 	vars := struct {
-		Username      string
 		ActivationURL string
 	}{
-		Username:      user.Username,
 		ActivationURL: activationURL,
 	}
 
 	// send mail
-	status, err := app.mailer.Send(mailer.UserWelcomeTemplate, user.Username, user.Email, vars, !isProdEnv)
+	status, err := app.mailer.Send(mailer.UserWelcomeTemplate, user.Email, vars, !isProdEnv)
 	if err != nil {
 		app.logger.Errorw("error sending welcome email", "error", err)
 

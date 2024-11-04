@@ -22,7 +22,7 @@ type TimestampStore struct {
 }
 
 func (s *TimestampStore) Create(ctx context.Context, timestamp *Timestamp) error {
-	query := `INSERT INTO timestamps (user_id, stamp_type, stamp_time) VALUES ($1, $2, $3)`
+	query := `INSERT INTO timestamps (user_id, stamp_type, stamp_time) VALUES (?, ?, ?)`
 
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
 	defer cancel()
@@ -48,7 +48,7 @@ func (s *TimestampStore) GetByID(ctx context.Context, id int64) (*Timestamp, err
 	query := `
 		SELECT id, user_id, stamp_type, stamp_time, created_at, updated_at, version
 		FROM timestamps
-		WHERE id = $1
+		WHERE id = ?
 		`
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
 	defer cancel()
@@ -79,7 +79,7 @@ func (s *TimestampStore) GetByID(ctx context.Context, id int64) (*Timestamp, err
 }
 
 func (s *TimestampStore) Delete(ctx context.Context, timestampID int64) error {
-	query := `DELETE FROM timestamps WHERE id = $1`
+	query := `DELETE FROM timestamps WHERE id = ?`
 
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
 	defer cancel()
@@ -103,12 +103,12 @@ func (s *TimestampStore) Update(ctx context.Context, timestamp *Timestamp) error
 	query := `
 		UPDATE timestamps
 		SET
-			user_id = $1,
-			stamp_type = $2,
-			stamp_time = $3,
-			second = $4,
+			user_id = ?,
+			stamp_type = ?,
+			stamp_time = ?,
+			second = ?,
 			version + 1
-		WHERE id = $5 AND version = $6
+		WHERE id = ? AND version = ?
 		RETURNING version
 	`
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)

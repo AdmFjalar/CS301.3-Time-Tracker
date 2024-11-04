@@ -12,17 +12,15 @@ import (
 )
 
 var (
-	ErrDuplicateEmail    = errors.New("a user with that email already exists")
-	ErrDuplicateUsername = errors.New("a user with that username already exists")
+	ErrDuplicateEmail = errors.New("a user with that email already exists")
 )
 
 type User struct {
 	ID        int64    `json:"id"`
-	Username  string   `json:"username"`
 	Email     string   `json:"email"`
 	Password  password `json:"-"`
 	CreatedAt string   `json:"created_at"`
-	IsActive  bool     `json:"is_active"`
+	IsActive  int      `json:"is_active"`
 	RoleID    int64    `json:"role_id"`
 	Role      Role     `json:"role"`
 }
@@ -50,8 +48,8 @@ type UserStore struct {
 
 func (s *UserStore) Create(ctx context.Context, tx *sql.Tx, user *User) error {
 	query := `
-		INSERT INTO users (username, password, email, role_id) VALUES 
-    ($1, $2, $3, (SELECT id FROM roles WHERE name = $4))
+		INSERT INTO users (passhash, email, role_id) VALUES 
+    (?, ?, (SELECT id FROM roles WHERE name = ?))
     RETURNING id, created_at
 	`
 
@@ -66,7 +64,6 @@ func (s *UserStore) Create(ctx context.Context, tx *sql.Tx, user *User) error {
 	err := tx.QueryRowContext(
 		ctx,
 		query,
-		user.Username,
 		user.Password.hash,
 		user.Email,
 		role,
@@ -78,8 +75,6 @@ func (s *UserStore) Create(ctx context.Context, tx *sql.Tx, user *User) error {
 		switch {
 		case err.Error() == `pq: duplicate key value violates unique constraint "users_email_key"`:
 			return ErrDuplicateEmail
-		case err.Error() == `pq: duplicate key value violates unique constraint "users_username_key"`:
-			return ErrDuplicateUsername
 		default:
 			return err
 		}
@@ -90,10 +85,10 @@ func (s *UserStore) Create(ctx context.Context, tx *sql.Tx, user *User) error {
 
 func (s *UserStore) GetByID(ctx context.Context, userID int64) (*User, error) {
 	query := `
-		SELECT users.id, username, email, password, created_at, roles.*
+		SELECT users.id, email, passhash, created_at, roles.*
 		FROM users
 		JOIN roles ON (users.role_id = roles.id)
-		WHERE users.id = $1 AND is_active = true
+		WHERE users.id = ? AND is_active = 1
 	`
 
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
@@ -106,7 +101,6 @@ func (s *UserStore) GetByID(ctx context.Context, userID int64) (*User, error) {
 		userID,
 	).Scan(
 		&user.ID,
-		&user.Username,
 		&user.Email,
 		&user.Password.hash,
 		&user.CreatedAt,
@@ -150,7 +144,7 @@ func (s *UserStore) Activate(ctx context.Context, token string) error {
 		}
 
 		// 2. update the user
-		user.IsActive = true
+		user.IsActive = 1
 		if err := s.update(ctx, tx, user); err != nil {
 			return err
 		}
@@ -166,10 +160,10 @@ func (s *UserStore) Activate(ctx context.Context, token string) error {
 
 func (s *UserStore) getUserFromInvitation(ctx context.Context, tx *sql.Tx, token string) (*User, error) {
 	query := `
-		SELECT u.id, u.username, u.email, u.created_at, u.is_active
+		SELECT u.id, u.email, u.created_at, u.is_active
 		FROM users u
 		JOIN user_invitations ui ON u.id = ui.user_id
-		WHERE ui.token = $1 AND ui.expiry > $2
+		WHERE ui.token = ? AND ui.expiry > ?
 	`
 
 	hash := sha256.Sum256([]byte(token))
@@ -181,7 +175,6 @@ func (s *UserStore) getUserFromInvitation(ctx context.Context, tx *sql.Tx, token
 	user := &User{}
 	err := tx.QueryRowContext(ctx, query, hashToken, time.Now()).Scan(
 		&user.ID,
-		&user.Username,
 		&user.Email,
 		&user.CreatedAt,
 		&user.IsActive,
@@ -199,7 +192,7 @@ func (s *UserStore) getUserFromInvitation(ctx context.Context, tx *sql.Tx, token
 }
 
 func (s *UserStore) createUserInvitation(ctx context.Context, tx *sql.Tx, token string, exp time.Duration, userID int64) error {
-	query := `INSERT INTO user_invitations (token, user_id, expiry) VALUES ($1, $2, $3)`
+	query := `INSERT INTO user_invitations (token, user_id, expiry) VALUES (?, ?, ?)`
 
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
 	defer cancel()
@@ -213,12 +206,12 @@ func (s *UserStore) createUserInvitation(ctx context.Context, tx *sql.Tx, token 
 }
 
 func (s *UserStore) update(ctx context.Context, tx *sql.Tx, user *User) error {
-	query := `UPDATE users SET username = $1, email = $2, is_active = $3 WHERE id = $4`
+	query := `UPDATE users SET email = ?, is_active = ? WHERE id = ?`
 
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
 	defer cancel()
 
-	_, err := tx.ExecContext(ctx, query, user.Username, user.Email, user.IsActive, user.ID)
+	_, err := tx.ExecContext(ctx, query, user.Email, user.IsActive, user.ID)
 	if err != nil {
 		return err
 	}
@@ -227,7 +220,7 @@ func (s *UserStore) update(ctx context.Context, tx *sql.Tx, user *User) error {
 }
 
 func (s *UserStore) deleteUserInvitations(ctx context.Context, tx *sql.Tx, userID int64) error {
-	query := `DELETE FROM user_invitations WHERE user_id = $1`
+	query := `DELETE FROM user_invitations WHERE user_id = ?`
 
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
 	defer cancel()
@@ -255,7 +248,7 @@ func (s *UserStore) Delete(ctx context.Context, userID int64) error {
 }
 
 func (s *UserStore) delete(ctx context.Context, tx *sql.Tx, id int64) error {
-	query := `DELETE FROM users WHERE id = $1`
+	query := `DELETE FROM users WHERE id = ?`
 
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
 	defer cancel()
@@ -270,8 +263,8 @@ func (s *UserStore) delete(ctx context.Context, tx *sql.Tx, id int64) error {
 
 func (s *UserStore) GetByEmail(ctx context.Context, email string) (*User, error) {
 	query := `
-		SELECT id, username, email, password, created_at FROM users
-		WHERE email = $1 AND is_active = true
+		SELECT id, email, passhash, created_at FROM users
+		WHERE email = ? AND is_active = 1
 	`
 
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
@@ -280,7 +273,6 @@ func (s *UserStore) GetByEmail(ctx context.Context, email string) (*User, error)
 	user := &User{}
 	err := s.db.QueryRowContext(ctx, query, email).Scan(
 		&user.ID,
-		&user.Username,
 		&user.Email,
 		&user.Password.hash,
 		&user.CreatedAt,

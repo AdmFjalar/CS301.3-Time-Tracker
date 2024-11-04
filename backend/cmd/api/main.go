@@ -37,17 +37,17 @@ const version = "1.0.0"
 // @description
 func main() {
 	cfg := config{
-		addr:        env.GetString("ADDR", ":8080"),
-		apiURL:      env.GetString("EXTERNAL_URL", "localhost:8080"),
-		frontendURL: env.GetString("FRONTEND_URL", "http://localhost:5173"),
+		addr:        env.GetString("ADDR", ""),
+		apiURL:      env.GetString("EXTERNAL_URL", ""),
+		frontendURL: env.GetString("FRONTEND_URL", ""),
 		db: dbConfig{
-			addr:         env.GetString("DB_ADDR", "mysql:123@tcp(localhost:3306)/"),
+			addr:         env.GetString("DB_ADDR", ""),
 			maxOpenConns: env.GetInt("DB_MAX_OPEN_CONNS", 30),
 			maxIdleConns: env.GetInt("DB_MAX_IDLE_CONNS", 30),
 			maxIdleTime:  env.GetString("DB_MAX_IDLE_TIME", "15m"),
 		},
 		redisCfg: redisConfig{
-			addr:    env.GetString("REDIS_ADDR", "localhost:3306"),
+			addr:    env.GetString("REDIS_ADDR", ""),
 			pw:      env.GetString("REDIS_PW", ""),
 			db:      env.GetInt("REDIS_DB", 0),
 			enabled: env.GetBool("REDIS_ENABLED", false),
@@ -66,9 +66,9 @@ func main() {
 				pass: env.GetString("AUTH_BASIC_PASS", "admin"),
 			},
 			token: tokenConfig{
-				secret: env.GetString("AUTH_TOKEN_SECRET", "example"),
-				exp:    time.Hour * 24 * 3, // 3 days
-				iss:    "gophersocial",
+				secret: env.GetString("AUTH_TOKEN_SECRET", ""),
+				exp:    time.Hour * 1, // 1 hour
+				iss:    "thymeflies",
 			},
 		},
 		rateLimiter: ratelimiter.Config{
