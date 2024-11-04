@@ -41,13 +41,13 @@ func main() {
 		apiURL:      env.GetString("EXTERNAL_URL", "localhost:8080"),
 		frontendURL: env.GetString("FRONTEND_URL", "http://localhost:5173"),
 		db: dbConfig{
-			addr:         env.GetString("DB_ADDR", "postgres://admin:adminpassword@localhost/socialnetwork?sslmode=disable"),
+			addr:         env.GetString("DB_ADDR", "mysql:123@tcp(localhost:3306)/"),
 			maxOpenConns: env.GetInt("DB_MAX_OPEN_CONNS", 30),
 			maxIdleConns: env.GetInt("DB_MAX_IDLE_CONNS", 30),
 			maxIdleTime:  env.GetString("DB_MAX_IDLE_TIME", "15m"),
 		},
 		redisCfg: redisConfig{
-			addr:    env.GetString("REDIS_ADDR", "localhost:6379"),
+			addr:    env.GetString("REDIS_ADDR", "localhost:3306"),
 			pw:      env.GetString("REDIS_PW", ""),
 			db:      env.GetInt("REDIS_DB", 0),
 			enabled: env.GetBool("REDIS_ENABLED", false),
