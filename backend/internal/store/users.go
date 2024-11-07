@@ -16,13 +16,13 @@ var (
 )
 
 type User struct {
-	ID        int64    `json:"id"`
-	Email     string   `json:"email"`
-	Password  password `json:"-"`
-	CreatedAt string   `json:"created_at"`
-	IsActive  int      `json:"is_active"`
-	RoleID    int64    `json:"role_id"`
-	Role      Role     `json:"role"`
+	ID        int64     `json:"id"`
+	Email     string    `json:"email"`
+	Password  password  `json:"-"`
+	CreatedAt time.Time `json:"created_at"`
+	IsActive  int       `json:"is_active"`
+	RoleID    int64     `json:"role_id"`
+	Role      Role      `json:"role"`
 }
 
 type password struct {
@@ -48,37 +48,45 @@ type UserStore struct {
 
 func (s *UserStore) Create(ctx context.Context, tx *sql.Tx, user *User) error {
 	query := `
-		INSERT INTO users (passhash, email, role_id) VALUES 
-    (?, ?, (SELECT id FROM roles WHERE name = ?))
-    RETURNING id, created_at
+		INSERT INTO users (passhash, email, role_id) 
+		VALUES (?, ?, (SELECT id FROM roles WHERE name = ? LIMIT 1))
 	`
 
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
 	defer cancel()
 
+	// Default to 'user' role if no role is provided
 	role := user.Role.Name
 	if role == "" {
 		role = "user"
 	}
 
-	err := tx.QueryRowContext(
+	// Execute the query and get the result
+	result, err := tx.ExecContext(
 		ctx,
 		query,
 		user.Password.hash,
 		user.Email,
 		role,
-	).Scan(
-		&user.ID,
-		&user.CreatedAt,
 	)
 	if err != nil {
-		switch {
-		case err.Error() == `pq: duplicate key value violates unique constraint "users_email_key"`:
+		// Handle the duplicate email error by checking the error message
+		if err.Error() == `pq: duplicate key value violates unique constraint "users_email_key"` {
 			return ErrDuplicateEmail
-		default:
-			return err
 		}
+		return err
 	}
+
+	// Get the last inserted ID
+	userID, err := result.LastInsertId()
+	if err != nil {
+		return err
+	}
+
+	// Set the user ID
+	user.ID = userID
+
+	// No need to set `CreatedAt` and `UpdatedAt` as they are automatically handled by the database
 
 	return nil
 }
@@ -95,6 +103,8 @@ func (s *UserStore) GetByID(ctx context.Context, userID int64) (*User, error) {
 	defer cancel()
 
 	user := &User{}
+	var rawCreatedAt []byte // For scanning the DATETIME field
+
 	err := s.db.QueryRowContext(
 		ctx,
 		query,
@@ -103,7 +113,7 @@ func (s *UserStore) GetByID(ctx context.Context, userID int64) (*User, error) {
 		&user.ID,
 		&user.Email,
 		&user.Password.hash,
-		&user.CreatedAt,
+		&rawCreatedAt, // Scan into rawCreatedAt as []byte
 		&user.Role.ID,
 		&user.Role.Name,
 		&user.Role.Level,
@@ -116,6 +126,12 @@ func (s *UserStore) GetByID(ctx context.Context, userID int64) (*User, error) {
 		default:
 			return nil, err
 		}
+	}
+
+	// Parse rawCreatedAt into a time.Time value
+	user.CreatedAt, err = time.Parse("2006-01-02 15:04:05", string(rawCreatedAt))
+	if err != nil {
+		return nil, err
 	}
 
 	return user, nil
@@ -173,10 +189,12 @@ func (s *UserStore) getUserFromInvitation(ctx context.Context, tx *sql.Tx, token
 	defer cancel()
 
 	user := &User{}
+	var rawCreatedAt []byte // For scanning the DATETIME field
+
 	err := tx.QueryRowContext(ctx, query, hashToken, time.Now()).Scan(
 		&user.ID,
 		&user.Email,
-		&user.CreatedAt,
+		&rawCreatedAt, // Scan into rawCreatedAt as []byte
 		&user.IsActive,
 	)
 	if err != nil {
@@ -186,6 +204,12 @@ func (s *UserStore) getUserFromInvitation(ctx context.Context, tx *sql.Tx, token
 		default:
 			return nil, err
 		}
+	}
+
+	// Parse rawCreatedAt into a time.Time value
+	user.CreatedAt, err = time.Parse("2006-01-02 15:04:05", string(rawCreatedAt))
+	if err != nil {
+		return nil, err
 	}
 
 	return user, nil

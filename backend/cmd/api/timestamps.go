@@ -16,10 +16,8 @@ type timestampKey string
 const timestampCtx timestampKey = "timestamp"
 
 type CreateTimestampPayload struct {
-	StampType   string `json:"stamp_type"`
-	UserID      int64  `json:"user_id"`
-	TimeStampID int64  `json:"timestamp_id"`
-	StampTime   string `json:"stamp_time"`
+	StampType string `json:"stamp_type"`
+	StampTime string `json:"stamp_time"`
 }
 
 func (app *application) createTimestampHandler(w http.ResponseWriter, r *http.Request) {
@@ -35,10 +33,9 @@ func (app *application) createTimestampHandler(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	user := getUserFromContext(r)
+	//user := getUserFromContext(r)
 
-	parsedTime, err := time.Parse(time.RFC3339, payload.StampTime)
-
+	parsedTime, err := time.ParseInLocation(time.RFC3339, payload.StampTime, time.Local)
 	if err != nil {
 		app.badRequestResponse(w, r, err)
 		return
@@ -46,7 +43,7 @@ func (app *application) createTimestampHandler(w http.ResponseWriter, r *http.Re
 
 	timestamp := &store.Timestamp{
 		StampType: payload.StampType,
-		UserID:    user.ID,
+		UserID:    getUserFromContext(r).ID,
 		StampTime: parsedTime,
 	}
 
