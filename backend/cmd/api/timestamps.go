@@ -63,7 +63,7 @@ func (app *application) createTimestampHandler(w http.ResponseWriter, r *http.Re
 	}
 }
 
-func (app *application) getAllTimestampsHandler(w http.ResponseWriter, r *http.Request) {
+func (app *application) getTimestampHandler(w http.ResponseWriter, r *http.Request) {
 	timestamp := getTimestampFromCtx(r)
 
 	if err := app.jsonResponse(w, http.StatusOK, timestamp); err != nil {
@@ -127,7 +127,7 @@ func (app *application) updateTimestampHandler(w http.ResponseWriter, r *http.Re
 
 	ctx := r.Context()
 
-	if err := app.updateTimestamp(ctx, &timestamp); err != nil {
+	if err := app.updateTimestamp(ctx, timestamp); err != nil {
 		app.internalServerError(w, r, err)
 	}
 
@@ -164,8 +164,8 @@ func (app *application) timestampsContextMiddleware(next http.Handler) http.Hand
 	})
 }
 
-func getTimestampFromCtx(r *http.Request) store.Timestamp {
-	timestamp, _ := r.Context().Value(timestampCtx).(store.Timestamp)
+func getTimestampFromCtx(r *http.Request) *store.Timestamp {
+	timestamp, _ := r.Context().Value(timestampCtx).(*store.Timestamp)
 	return timestamp
 }
 

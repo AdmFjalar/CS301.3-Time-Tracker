@@ -21,6 +21,49 @@ type TimestampStore struct {
 	db *sql.DB
 }
 
+func (s *TimestampStore) GetUserFeed(ctx context.Context, userID int64, fq PaginatedFeedQuery) ([]Timestamp, error) {
+	query := `
+		SELECT 
+			p.id, p.user_id, p.time, p.created_at, p.version
+		FROM timestamps p
+		LEFT JOIN users u ON p.user_id = u.id
+		WHERE 
+			f.user_id = ?
+		GROUP BY p.id
+		ORDER BY p.created_at ` + fq.Sort + `
+		LIMIT ? OFFSET ?
+	`
+
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
+	rows, err := s.db.QueryContext(ctx, query, userID, fq.Limit, fq.Offset)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var feed []Timestamp
+	for rows.Next() {
+		var p Timestamp
+		err := rows.Scan(
+			&p.ID,
+			&p.UserID,
+			&p.StampTime,
+			&p.CreatedAt,
+			&p.Version,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		feed = append(feed, p)
+	}
+
+	return feed, nil
+}
+
 func (s *TimestampStore) Create(ctx context.Context, timestamp *Timestamp) error {
 	query := `INSERT INTO timestamps (user_id, stamp_type, stamp_time) VALUES (?, ?, ?)`
 

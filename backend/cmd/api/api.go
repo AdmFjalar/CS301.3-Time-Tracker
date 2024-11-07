@@ -124,10 +124,11 @@ func (app *application) mount() http.Handler {
 		r.Route("/timestamps", func(r chi.Router) {
 			r.Use(app.AuthTokenMiddleware)
 			r.Post("/", app.createTimestampHandler)
+			r.Get("/", app.getTimestampHandler)
 
 			r.Route("/{timestampID}", func(r chi.Router) {
 				r.Use(app.timestampsContextMiddleware)
-				r.Get("/", app.getAllTimestampsHandler)
+				r.Get("/", app.checkTimestampOwnership("manager", app.getTimestampHandler))
 
 				r.Patch("/", app.checkTimestampOwnership("manager", app.updateTimestampHandler))
 				r.Delete("/", app.checkTimestampOwnership("manager", app.deleteTimestampHandler))
@@ -141,14 +142,12 @@ func (app *application) mount() http.Handler {
 				r.Use(app.AuthTokenMiddleware)
 
 				r.Get("/", app.getUserHandler)
-				// r.Put("/follow", app.followUserHandler)
-				// r.Put("/unfollow", app.unfollowUserHandler)
 			})
 
-			// r.Group(func(r chi.Router) {
-			// 	r.Use(app.AuthTokenMiddleware)
-			// 	// r.Get("/feed", app.getUserFeedHandler)
-			// })
+			r.Group(func(r chi.Router) {
+				r.Use(app.AuthTokenMiddleware)
+				r.Get("/feed", app.getUserFeedHandler)
+			})
 		})
 
 		// Public routes
