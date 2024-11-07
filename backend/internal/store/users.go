@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -295,11 +296,13 @@ func (s *UserStore) GetByEmail(ctx context.Context, email string) (*User, error)
 	defer cancel()
 
 	user := &User{}
+	var rawCreatedAt []byte // Temporarily hold the raw byte slice for created_at
+
 	err := s.db.QueryRowContext(ctx, query, email).Scan(
 		&user.ID,
 		&user.Email,
 		&user.Password.hash,
-		&user.CreatedAt,
+		&rawCreatedAt, // Scan into rawCreatedAt as []byte
 	)
 	if err != nil {
 		switch err {
@@ -308,6 +311,12 @@ func (s *UserStore) GetByEmail(ctx context.Context, email string) (*User, error)
 		default:
 			return nil, err
 		}
+	}
+
+	// Parse rawCreatedAt into a time.Time value
+	user.CreatedAt, err = time.Parse("2006-01-02 15:04:05", string(rawCreatedAt)) // Assuming MySQL DATETIME format
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse created_at: %v", err)
 	}
 
 	return user, nil

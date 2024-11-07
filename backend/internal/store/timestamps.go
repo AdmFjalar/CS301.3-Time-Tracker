@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
+	"strings"
 	"time"
 )
 
@@ -24,7 +26,7 @@ type TimestampStore struct {
 func (s *TimestampStore) GetUserFeed(ctx context.Context, userID int64, fq PaginatedFeedQuery) ([]Timestamp, error) {
 	query := `
 		SELECT 
-			p.id, p.user_id, p.time, p.created_at, p.version
+			p.id, p.user_id, p.stamp_type, p.time, p.created_at, p.version
 		FROM timestamps p
 		LEFT JOIN users u ON p.user_id = u.id
 		WHERE 
@@ -51,6 +53,7 @@ func (s *TimestampStore) GetUserFeed(ctx context.Context, userID int64, fq Pagin
 		err := rows.Scan(
 			&p.ID,
 			&p.UserID,
+			&p.StampType,  // Scan the stamp_type directly into the Timestamp struct
 			&rawStampTime, // Scan into rawStampTime as []byte
 			&rawCreatedAt, // Scan into rawCreatedAt as []byte
 			&p.Version,
@@ -78,6 +81,55 @@ func (s *TimestampStore) GetUserFeed(ctx context.Context, userID int64, fq Pagin
 }
 
 func (s *TimestampStore) Create(ctx context.Context, timestamp *Timestamp) error {
+	// Define allowed previous states for each stamp type
+	validTransitions := map[string]string{
+		"sign-in":     "sign-out",          // Only allowed if the last stamp is "sign-out"
+		"sign-out":    "sign-in,end-break", // Only allowed if the last stamp is "sign-in" or "end-break"
+		"start-break": "sign-in,end-break", // Only allowed if the last stamp is "sign-in" or "end-break"
+		"end-break":   "start-break",       // Only allowed if the last stamp is "start-break"
+	}
+
+	// Retrieve the latest timestamp for the user
+	fq := PaginatedFeedQuery{
+		Limit:  1,
+		Offset: 0,
+		Sort:   "desc",
+		Search: "",
+	}
+	timestamps, err := s.GetUserFeed(ctx, timestamp.UserID, fq)
+	if err != nil {
+		return err
+	}
+
+	// Handle case where no previous timestamps exist (first action should be "sign-in")
+	if len(timestamps) == 0 && timestamp.StampType != "sign-in" {
+		return errors.New("first action must be sign-in")
+	}
+
+	// Validate the transition if there is a previous timestamp
+	if len(timestamps) > 0 {
+		previousType := timestamps[0].StampType
+
+		// Ensure no duplicate consecutive timestamps
+		if previousType == timestamp.StampType {
+			return errors.New("duplicate timestamp")
+		}
+
+		// Get valid previous types for the current stamp type
+		validPrevTypes, exists := validTransitions[timestamp.StampType]
+		if !exists {
+			return errors.New("invalid stamp type")
+		}
+
+		// Check if the last stamp type is within the allowed types
+		allowedTypes := strings.Split(validPrevTypes, ",")
+		if !contains(allowedTypes, previousType) {
+			return fmt.Errorf("invalid transition from %s to %s", previousType, timestamp.StampType)
+		}
+	}
+
+	timestamp.StampTime = time.Now()
+
 	query := `INSERT INTO timestamps (user_id, stamp_type, time) VALUES (?, ?, ?)`
 
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
@@ -224,4 +276,14 @@ func (s *TimestampStore) Update(ctx context.Context, timestamp *Timestamp) error
 
 	// Return nil if the update was successful
 	return nil
+}
+
+// Helper function to check if a value exists in a slice
+func contains(slice []string, value string) bool {
+	for _, item := range slice {
+		if item == value {
+			return true
+		}
+	}
+	return false
 }
