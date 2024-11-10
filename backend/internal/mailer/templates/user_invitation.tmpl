@@ -1,0 +1,23 @@
+{{define "subject"}} Finish Registration with Thyme Flies {{end}}
+
+{{define "body"}}
+<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  </head>
+  <body> <p>Hi,</p>
+    <p>Thanks for signing up for Thyme Flies.</p></p>
+    <p>Before you can start using Thyme Flies, you need to confirm your email address. Click the link below to confirm your email address:</p>
+    <p><a href="{{.ActivationURL}}">{{.ActivationURL}}</a></p>
+    <p>If you want to activate your account manually copy and paste the code from the link above</p>
+    <p>If you didn't sign up for Thyme Flies, you can safely ignore this email.</p>
+    <p>The token is valid for <strong>1 hour</strong>.</p>
+
+    <p>Thanks,</p>
+    <p>The Thyme Flies Team</p>
+  </body>
+</html>
+
+{{end}}
