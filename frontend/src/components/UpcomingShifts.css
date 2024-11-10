@@ -1,0 +1,20 @@
+.upcoming-shifts {
+    background-color: #e4e4e4;
+    padding: 20px;
+    border-radius: 10px;
+    width: 45%;
+  }
+  
+  .upcoming-shifts h3 {
+    font-size: 18px;
+  }
+  
+  .upcoming-shifts ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .upcoming-shifts li {
+    margin-bottom: 10px;
+  }
+  

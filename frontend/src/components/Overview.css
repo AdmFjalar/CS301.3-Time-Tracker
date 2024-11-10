@@ -1,0 +1,33 @@
+.overview {
+    background-color: #e4e4e4;
+    padding: 20px;
+    border-radius: 10px;
+    width: 45%;
+  }
+  
+  .overview h3 {
+    font-size: 18px;
+  }
+  
+  .overview p {
+    margin: 10px 0;
+  }
+  
+  .buttons {
+    margin-top: 20px;
+  }
+  
+  button {
+    background-color: #344e41;
+    color: white;
+    border: none;
+    padding: 10px;
+    margin-right: 10px;
+    cursor: pointer;
+    border-radius: 5px;
+  }
+  
+  button:hover {
+    background-color: #3f624b;
+  }
+  

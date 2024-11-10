@@ -1,0 +1,31 @@
+.worked-time {
+    background-color: #e4e4e4;
+    padding: 20px;
+    border-radius: 10px;
+  }
+  
+  .worked-time h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  table th, table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ccc;
+  }
+  
+  table th {
+    background-color: #344e41;
+    color: white;
+  }
+  
+  table tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+  
