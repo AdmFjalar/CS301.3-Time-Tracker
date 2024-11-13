@@ -27,10 +27,17 @@ const userCtx userKey = "user"
 //	@Security		ApiKeyAuth
 //	@Router			/users/{id} [get]
 func (app *application) getUserHandler(w http.ResponseWriter, r *http.Request) {
-	userID, err := strconv.ParseInt(chi.URLParam(r, "userID"), 10, 64)
-	if err != nil {
-		app.badRequestResponse(w, r, err)
-		return
+	var userID int64
+	var err error
+
+	if userIDParam := chi.URLParam(r, "userID"); userIDParam != "" {
+		userID, err = strconv.ParseInt(userIDParam, 10, 64)
+		if err != nil {
+			app.badRequestResponse(w, r, err)
+			return
+		}
+	} else {
+		userID = getUserFromContext(r).ID
 	}
 
 	user, err := app.getUser(r.Context(), userID)

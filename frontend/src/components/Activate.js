@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useLocation } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
 const Activate = () => {
-  const [token, setToken] = useState('');
+  const { token: urlToken } = useParams(); // Extract token from URL parameters
+  const [token, setToken] = useState(urlToken || ''); // Initialize with URL token or empty string
   const [message, setMessage] = useState('');
-  const location = useLocation();
 
   useEffect(() => {
-    // Extract the token from the URL query
-    const params = new URLSearchParams(location.search);
-    const urlToken = params.get('token');
-    if (urlToken) setToken(urlToken);
-  }, [location.search]);
+    // If there's a token in the URL, set it in state
+    if (urlToken) {
+      setToken(urlToken);
+    }
+  }, [urlToken]); // Dependency array ensures this only runs when urlToken changes
 
   const handleActivate = async (e) => {
     e.preventDefault();

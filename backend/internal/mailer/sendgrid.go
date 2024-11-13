@@ -50,9 +50,11 @@ func (m *SendGridMailer) Send(templateFile, email string, data any, isSandbox bo
 
 	message := mail.NewSingleEmail(from, subject.String(), to, "", body.String())
 
+	enableSandbox := false
 	message.SetMailSettings(&mail.MailSettings{
 		SandboxMode: &mail.Setting{
-			Enable: &isSandbox,
+			// Enable: &isSandbox,
+			Enable: &enableSandbox,
 		},
 	})
 

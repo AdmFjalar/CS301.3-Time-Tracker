@@ -6,7 +6,6 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"errors"
-	"fmt"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -19,6 +18,8 @@ var (
 type User struct {
 	ID        int64     `json:"id"`
 	Email     string    `json:"email"`
+	FirstName string    `json:"first_name"`
+	LastName  string    `json:"last_name"`
 	Password  password  `json:"-"`
 	CreatedAt time.Time `json:"created_at"`
 	IsActive  int       `json:"is_active"`
@@ -94,7 +95,7 @@ func (s *UserStore) Create(ctx context.Context, tx *sql.Tx, user *User) error {
 
 func (s *UserStore) GetByID(ctx context.Context, userID int64) (*User, error) {
 	query := `
-		SELECT users.id, email, passhash, created_at, roles.*
+		SELECT users.id, email, first_name, last_name, passhash, created_at, roles.*
 		FROM users
 		JOIN roles ON (users.role_id = roles.id)
 		WHERE users.id = ? AND is_active = 1
@@ -104,6 +105,7 @@ func (s *UserStore) GetByID(ctx context.Context, userID int64) (*User, error) {
 	defer cancel()
 
 	user := &User{}
+	var rawFirstName, rawLastName sql.NullString
 	var rawCreatedAt []byte // For scanning the DATETIME field
 
 	err := s.db.QueryRowContext(
@@ -113,8 +115,10 @@ func (s *UserStore) GetByID(ctx context.Context, userID int64) (*User, error) {
 	).Scan(
 		&user.ID,
 		&user.Email,
+		&rawFirstName, // Use sql.NullString for nullable first_name
+		&rawLastName,  // Use sql.NullString for nullable last_name
 		&user.Password.hash,
-		&rawCreatedAt, // Scan into rawCreatedAt as []byte
+		&rawCreatedAt, // Scan created_at as raw bytes
 		&user.Role.ID,
 		&user.Role.Name,
 		&user.Role.Level,
@@ -127,6 +131,81 @@ func (s *UserStore) GetByID(ctx context.Context, userID int64) (*User, error) {
 		default:
 			return nil, err
 		}
+	}
+
+	// Assign first_name and last_name only if they are not NULL
+	if rawFirstName.Valid {
+		user.FirstName = rawFirstName.String
+	} else {
+		user.FirstName = "" // Set a default or handle as needed
+	}
+
+	if rawLastName.Valid {
+		user.LastName = rawLastName.String
+	} else {
+		user.LastName = "" // Set a default or handle as needed
+	}
+
+	// Parse rawCreatedAt into a time.Time value
+	user.CreatedAt, err = time.Parse("2006-01-02 15:04:05", string(rawCreatedAt))
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
+func (s *UserStore) GetByEmail(ctx context.Context, email string) (*User, error) {
+	query := `
+	SELECT users.id, email, first_name, last_name, passhash, created_at, roles.*
+	FROM users
+	JOIN roles ON (users.role_id = roles.id)
+	WHERE users.email = ? AND is_active = 1
+`
+
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
+	user := &User{}
+	var rawFirstName, rawLastName sql.NullString
+	var rawCreatedAt []byte // For scanning the DATETIME field
+
+	err := s.db.QueryRowContext(
+		ctx,
+		query,
+		email,
+	).Scan(
+		&user.ID,
+		&user.Email,
+		&rawFirstName, // Use sql.NullString for nullable first_name
+		&rawLastName,  // Use sql.NullString for nullable last_name
+		&user.Password.hash,
+		&rawCreatedAt, // Scan created_at as raw bytes
+		&user.Role.ID,
+		&user.Role.Name,
+		&user.Role.Level,
+		&user.Role.Description,
+	)
+	if err != nil {
+		switch err {
+		case sql.ErrNoRows:
+			return nil, ErrNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	// Assign first_name and last_name only if they are not NULL
+	if rawFirstName.Valid {
+		user.FirstName = rawFirstName.String
+	} else {
+		user.FirstName = "" // Set a default or handle as needed
+	}
+
+	if rawLastName.Valid {
+		user.LastName = rawLastName.String
+	} else {
+		user.LastName = "" // Set a default or handle as needed
 	}
 
 	// Parse rawCreatedAt into a time.Time value
@@ -284,40 +363,4 @@ func (s *UserStore) delete(ctx context.Context, tx *sql.Tx, id int64) error {
 	}
 
 	return nil
-}
-
-func (s *UserStore) GetByEmail(ctx context.Context, email string) (*User, error) {
-	query := `
-		SELECT id, email, passhash, created_at FROM users
-		WHERE email = ? AND is_active = 1
-	`
-
-	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
-	defer cancel()
-
-	user := &User{}
-	var rawCreatedAt []byte // Temporarily hold the raw byte slice for created_at
-
-	err := s.db.QueryRowContext(ctx, query, email).Scan(
-		&user.ID,
-		&user.Email,
-		&user.Password.hash,
-		&rawCreatedAt, // Scan into rawCreatedAt as []byte
-	)
-	if err != nil {
-		switch err {
-		case sql.ErrNoRows:
-			return nil, ErrNotFound
-		default:
-			return nil, err
-		}
-	}
-
-	// Parse rawCreatedAt into a time.Time value
-	user.CreatedAt, err = time.Parse("2006-01-02 15:04:05", string(rawCreatedAt)) // Assuming MySQL DATETIME format
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse created_at: %v", err)
-	}
-
-	return user, nil
 }
