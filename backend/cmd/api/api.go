@@ -130,6 +130,7 @@ func (app *application) mount() http.Handler {
 			r.Use(app.AuthTokenMiddleware)
 			r.Post("/", app.createTimestampHandler)
 			r.Get("/", app.getTimestampHandler)
+			r.Get("/latest", app.getLatestTimestampHandler)
 
 			r.Route("/{timestampID}", func(r chi.Router) {
 				r.Use(app.timestampsContextMiddleware)
@@ -138,6 +139,11 @@ func (app *application) mount() http.Handler {
 				r.Patch("/", app.checkTimestampOwnership("manager", app.updateTimestampHandler))
 				r.Delete("/", app.checkTimestampOwnership("manager", app.deleteTimestampHandler))
 			})
+		})
+
+		r.Route("/shifts", func(r chi.Router) {
+			r.Use(app.AuthTokenMiddleware)
+			r.Get("/", app.getFinishedShiftsHandler)
 		})
 
 		r.Route("/users", func(r chi.Router) {

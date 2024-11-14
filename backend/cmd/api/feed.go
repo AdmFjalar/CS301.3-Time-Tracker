@@ -25,7 +25,7 @@ import (
 //	@Security		ApiKeyAuth
 //	@Router			/users/feed [get]
 func (app *application) getUserFeedHandler(w http.ResponseWriter, r *http.Request) {
-	fq := store.PaginatedFeedQuery{
+	fq := store.Query{
 		Limit:  20,
 		Offset: 0,
 		Sort:   "desc",

@@ -69,6 +69,36 @@ func (app *application) getTimestampHandler(w http.ResponseWriter, r *http.Reque
 	}
 }
 
+func (app *application) getLatestTimestampHandler(w http.ResponseWriter, r *http.Request) {
+	user := getUserFromContext(r)
+
+	timestamp, err := app.store.Timestamps.GetLatestTimestamp(r.Context(), user.ID)
+	if err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+
+	if err := app.jsonResponse(w, http.StatusOK, timestamp); err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+}
+
+func (app *application) getFinishedShiftsHandler(w http.ResponseWriter, r *http.Request) {
+	user := getUserFromContext(r)
+
+	shifts, err := app.store.Timestamps.GetFinishedShifts(r.Context(), user.ID)
+	if err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+
+	if err := app.jsonResponse(w, http.StatusOK, shifts); err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+}
+
 func (app *application) deleteTimestampHandler(w http.ResponseWriter, r *http.Request) {
 	idParam := chi.URLParam(r, "timestampID")
 	idTemp, err := strconv.Atoi(idParam)

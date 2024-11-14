@@ -19,11 +19,20 @@ type Timestamp struct {
 	Version   int       `json:"version"`
 }
 
+type Shift struct {
+	SignIn         time.Time     `json:"SignIn"`
+	SignOut        time.Time     `json:"SignOut"`
+	Breaks         [][]time.Time `json:"Breaks"`
+	TotalBreakTime float64       `json:"TotalBreakTime"` // TotalBreakTime in seconds (float64)
+	TotalShiftTime float64       `json:"TotalShiftTime"` // TotalShiftTime in seconds (float64)
+	NetWorkTime    float64       `json:"NetWorkTime"`    // NetWorkTime in seconds (float64)
+}
+
 type TimestampStore struct {
 	db *sql.DB
 }
 
-func (s *TimestampStore) GetUserFeed(ctx context.Context, userID int64, fq PaginatedFeedQuery) ([]Timestamp, error) {
+func (s *TimestampStore) GetUserFeed(ctx context.Context, userID int64, fq Query) ([]Timestamp, error) {
 	query := `
 		SELECT 
 			p.id, p.user_id, p.stamp_type, p.time, p.created_at, p.version
@@ -80,6 +89,108 @@ func (s *TimestampStore) GetUserFeed(ctx context.Context, userID int64, fq Pagin
 	return feed, nil
 }
 
+// GetLatestTimestamp retrieves the most recent timestamp for a specific user
+func (s *TimestampStore) GetLatestTimestamp(ctx context.Context, userID int64) (*Timestamp, error) {
+	// Define a query to fetch only the latest timestamp for the user
+	fq := Query{
+		Limit:  1,
+		Offset: 0,
+		Sort:   "desc", // Sort by created_at in descending order to get the latest timestamp
+	}
+
+	// Call GetUserFeed with the modified PaginatedFeedQuery
+	timestamps, err := s.GetUserFeed(ctx, userID, fq)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check if any timestamps were retrieved
+	if len(timestamps) == 0 {
+		return nil, nil
+	}
+
+	// Return the first (and only) timestamp in the list
+	return &timestamps[0], nil
+}
+
+func (s *TimestampStore) GetFinishedShifts(ctx context.Context, userID int64) ([]Shift, error) {
+	query := `
+		SELECT stamp_type, time
+		FROM timestamps
+		WHERE user_id = ?
+		ORDER BY time ASC
+	`
+
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
+	rows, err := s.db.QueryContext(ctx, query, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var shifts []Shift
+	var currentShift *Shift
+	var currentBreakStart time.Time
+
+	for rows.Next() {
+		var stampType string
+		var stampTimeRaw string
+		if err := rows.Scan(&stampType, &stampTimeRaw); err != nil {
+			return nil, err
+		}
+
+		// Parse the raw timestamp string with the correct format
+		stampTime, err := time.Parse("2006-01-02 15:04:05", stampTimeRaw)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse timestamp: %v", err)
+		}
+
+		switch stampType {
+		case "sign-in":
+			if currentShift == nil {
+				currentShift = &Shift{SignIn: stampTime}
+			}
+
+		case "start-break":
+			if currentShift != nil && currentShift.SignOut.IsZero() {
+				currentBreakStart = stampTime
+			}
+
+		case "end-break":
+			if currentShift != nil && !currentBreakStart.IsZero() {
+				breakEnd := stampTime
+				currentShift.Breaks = append(currentShift.Breaks, []time.Time{currentBreakStart, breakEnd})
+
+				// Calculate break duration in seconds (float64)
+				breakDuration := breakEnd.Sub(currentBreakStart).Seconds()
+				currentShift.TotalBreakTime += breakDuration // Keep TotalBreakTime as seconds (float64)
+
+				currentBreakStart = time.Time{}
+			}
+
+		case "sign-out":
+			if currentShift != nil && currentShift.SignOut.IsZero() {
+				currentShift.SignOut = stampTime
+				// Calculate total shift time in seconds (float64)
+				currentShift.TotalShiftTime = currentShift.SignOut.Sub(currentShift.SignIn).Seconds() // TotalShiftTime in seconds
+				// NetWorkTime is shift time minus break time
+				currentShift.NetWorkTime = currentShift.TotalShiftTime - currentShift.TotalBreakTime
+
+				shifts = append(shifts, *currentShift)
+				currentShift = nil
+			}
+		}
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return shifts, nil
+}
+
 func (s *TimestampStore) Create(ctx context.Context, timestamp *Timestamp) error {
 	// Define allowed previous states for each stamp type
 	validTransitions := map[string]string{
@@ -89,26 +200,16 @@ func (s *TimestampStore) Create(ctx context.Context, timestamp *Timestamp) error
 		"end-break":   "start-break",       // Only allowed if the last stamp is "start-break"
 	}
 
-	// Retrieve the latest timestamp for the user
-	fq := PaginatedFeedQuery{
-		Limit:  1,
-		Offset: 0,
-		Sort:   "desc",
-		Search: "",
-	}
-	timestamps, err := s.GetUserFeed(ctx, timestamp.UserID, fq)
-	if err != nil {
-		return err
-	}
+	latestTimestamp, err := s.GetLatestTimestamp(ctx, timestamp.UserID)
 
 	// Handle case where no previous timestamps exist (first action should be "sign-in")
-	if len(timestamps) == 0 && timestamp.StampType != "sign-in" {
+	if latestTimestamp == nil && timestamp.StampType != "sign-in" {
 		return errors.New("first action must be sign-in")
 	}
 
 	// Validate the transition if there is a previous timestamp
-	if len(timestamps) > 0 {
-		previousType := timestamps[0].StampType
+	if latestTimestamp != nil {
+		previousType := latestTimestamp.StampType
 
 		// Ensure no duplicate consecutive timestamps
 		if previousType == timestamp.StampType {

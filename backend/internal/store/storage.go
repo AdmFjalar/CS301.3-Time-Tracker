@@ -19,7 +19,9 @@ type Storage struct {
 		Create(context.Context, *Timestamp) error
 		Delete(context.Context, int64) error
 		Update(context.Context, *Timestamp) error
-		GetUserFeed(context.Context, int64, PaginatedFeedQuery) ([]Timestamp, error)
+		GetUserFeed(context.Context, int64, Query) ([]Timestamp, error)
+		GetLatestTimestamp(context.Context, int64) (*Timestamp, error)
+		GetFinishedShifts(context.Context, int64) ([]Shift, error)
 	}
 
 	Users interface {

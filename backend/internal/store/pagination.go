@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-type PaginatedFeedQuery struct {
+type Query struct {
 	Limit  int    `json:"limit" validate:"gte=1,lte=20"`
 	Offset int    `json:"offset" validate:"gte=0"`
 	Sort   string `json:"sort" validate:"oneof=asc desc"`
@@ -15,7 +15,7 @@ type PaginatedFeedQuery struct {
 	Until  string `json:"until"`
 }
 
-func (fq PaginatedFeedQuery) Parse(r *http.Request) (PaginatedFeedQuery, error) {
+func (fq Query) Parse(r *http.Request) (Query, error) {
 	qs := r.URL.Query()
 
 	limit := qs.Get("limit")
