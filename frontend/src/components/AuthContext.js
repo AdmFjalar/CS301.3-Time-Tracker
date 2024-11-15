@@ -1,20 +1,25 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useEffect, useContext } from 'react';
 
 const AuthContext = createContext();
 
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
-  const [authToken, setAuthToken] = useState(null); // Store auth token
+  const [authToken, setAuthToken] = useState(() => {
+    // Retrieve the token from localStorage (if it exists) when the component mounts
+    return localStorage.getItem('authToken') || null;
+  });
 
-  // Sign in function
+  // Sign in function: Set the token and store it in localStorage
   const signIn = (token) => {
-    setAuthToken(token); // Set the auth token when the user logs in
+    setAuthToken(token); 
+    localStorage.setItem('authToken', token); // Store the token in localStorage
   };
 
-  // Sign out function
+  // Sign out function: Clear the token from state and localStorage
   const signOut = () => {
-    setAuthToken(null); // Clear the auth token when the user signs out
+    setAuthToken(null); 
+    localStorage.removeItem('authToken'); // Remove token from localStorage
   };
 
   return (

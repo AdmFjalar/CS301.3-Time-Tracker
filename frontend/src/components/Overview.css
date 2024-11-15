@@ -31,3 +31,8 @@
     background-color: #3f624b;
   }
   
+  /* Ensure h4 is inline with the following text */
+h4 {
+  display: inline-block; /* Makes the heading inline */
+  margin-right: auto; /* Optional: Adds some spacing between the heading and text */
+}
