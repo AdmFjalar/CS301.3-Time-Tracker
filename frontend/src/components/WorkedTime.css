@@ -1,5 +1,6 @@
 .worked-time {
-    background-color: #e4e4e4;
+    background-color: #E8DBC5;
+    width: fit-content;
     padding: 20px;
     border-radius: 10px;
   }
@@ -7,25 +8,25 @@
   .worked-time h2 {
     font-size: 24px;
     margin-bottom: 20px;
+    margin-top: 0;
   }
   
   table {
-    width: 100%;
+    width: auto;
     border-collapse: collapse;
   }
   
   table th, table td {
-    padding: 10px;
+    padding: 15px;
     text-align: left;
-    border-bottom: 1px solid #ccc;
+    border-bottom: 1px solid #000000;
   }
   
   table th {
     background-color: #344e41;
     color: white;
   }
-  
+/*   
   table tr:nth-child(even) {
     background-color: #f9f9f9;
-  }
-  
+  } */

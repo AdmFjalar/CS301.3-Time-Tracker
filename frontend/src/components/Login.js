@@ -32,11 +32,11 @@ const Login = () => {
   };
 
   return (
-    <div className="login-container">
-      <div className="login-sidebar">
+    <div>
+      {/* <div className="login-sidebar">
         <h1>Thyme Flies</h1>
-        <p3>Time Tracker</p3>
-      </div>
+        <p>Time Tracker</p>
+      </div> */}
       <div className="login-form-container">
         <form onSubmit={handleLogin} className="login-form">
           <h2>User ID or Email</h2>

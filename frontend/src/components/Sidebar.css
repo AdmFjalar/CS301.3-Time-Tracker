@@ -1,23 +1,32 @@
 /* Sidebar Styles */
 .sidebar {
-  position: fixed; /* Fix the sidebar in place */
-  top: 0;           /* Align to the top of the viewport */
-  left: 0;          /* Align to the left of the viewport */
-  height: 100%;     /* Full height of the viewport */
-  background: #3A4A32;
-  color: #FFF4E9!important;
-  padding: 0;
-  width: 250px;     /* Sidebar width */
-  z-index: 1000;    /* Ensure the sidebar is on top of other elements */
-  display: block;   /* Use block layout for stacking items */
+  background-color: #3a5b45;
+  width: 15%; 
+  display: flex;
+  flex-direction: column;
+  align-items: top;
+  justify-content: top;
+  color: #FFF4E9;
+  padding: 30px;
+  text-align: right;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
 }
 
 /* Sidebar Heading */
-.sidebar h2 {
-  font-size: 24px;
+.sidebar h1 {
+  font-size: 2rem;
   font-weight: 900;
   font-style: italic;
-  margin: 20px 0; /* Adds some space around the heading */
+  margin: 0;
+}
+
+.sidebar .page-subtitle {
+  font-size: 1.5rem;
+  font-weight: 400;
+  margin: 10px 0 20px 0;
 }
 
 /* Sidebar Navigation */
@@ -29,20 +38,46 @@
 }
 
 /* Sidebar Navigation Links */
-.sidebar nav a {
+.sidebar nav button {
   display: block;
-  margin: 10px 0; /* Adds space between links */
-  color: #FFF4E9!important;
-  text-decoration: none;
+  margin: 10px 0 25px auto; /* Adds space between links */
+  font-weight: 500;
+  font-size: 1.2rem;
+  text-decoration: underline;
+  text-shadow: 0px 3px 5px rgba(0, 0, 0, 0.25);
 }
 
 /* Sign Out Button Style */
 .signout {
-  background-color: #ff6b6b;
-  color: #FFF4E9!important;
-  border: none;
   padding: 10px;
   margin-top: 30px; /* Adds margin-top to position sign-out button below nav */
-  margin-bottom: 30px;
+  margin-bottom: 50px;
+  margin-left: auto;
+  font-weight: 500;
+  font-size: 1.2rem;
+  text-decoration: underline;
   cursor: pointer;
+  width: fit-content;
+  opacity: 100%!important;
+}
+
+.sidebar button {
+  background: none;
+  color: #FFF4E9!important;
+  border: none;
+  margin-left: auto;
+}
+
+.sidebar .active {
+  opacity: 100%;
+}
+
+.sidebar button:not(.active) {
+  opacity: 30%;
+  transition-duration: 0.1s;
+}
+
+.sidebar button:not(.active):hover {
+  opacity: 100%;
+  transition-duration: 0.1s;
 }

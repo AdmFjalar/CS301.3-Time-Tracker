@@ -1,8 +1,8 @@
 /* Main container layout */
 .register-container {
     display: flex;
-    height: 100vh;
-    background-color: #f4eadb;
+    height: 100%;
+    /* background-color: #f4eadb; */
   }
   
   /* Sidebar styles */
@@ -14,12 +14,14 @@
     align-items: top;
     justify-content: top    ;
     color: #ffffff;
-    padding: 20px;
+    padding: 30px;
+    text-align: right;
   }
   
   .register-sidebar h1 {
     font-size: 1.8rem;
-    font-weight: bold;
+    font-weight: 900;
+    font-style: italic;
     margin: 0;
   }
   
@@ -98,9 +100,10 @@
   
   /* Message styling */
   .register-message {
-    color: red;
+    color: #3a5b45;
     margin-top: 10px;
     text-align: center;
+    font-style: italic;
   }
   
   

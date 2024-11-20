@@ -8,7 +8,7 @@ const AppLayout = () => {
   const showSidebar = location.pathname !== '/login' || location.pathname === '/register';
   return (
     <div className="app-container">
-      {showSidebar && <Sidebar />} {/* Conditionally render Sidebar */}
+      <Sidebar />
       <div className="main-content">
         <Outlet /> {/* Render nested routes */}
       </div>

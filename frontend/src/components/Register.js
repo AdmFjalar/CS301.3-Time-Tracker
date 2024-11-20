@@ -9,6 +9,7 @@ const Register = () => {
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    setMessage('');
     try {
       await axios.post('http://localhost:8080/v1/authentication/user', {
         email,
@@ -23,10 +24,10 @@ const Register = () => {
   return (
     
     <div className="register-container">
-  <div className="register-sidebar">
+  {/* <div className="register-sidebar">
     <h1>Thyme Flies</h1>
     <p>Time Tracker</p>
-  </div>
+  </div> */}
   <div className="register-form-container">
     <div className="register-form">
       <h2 className="register-title">Register</h2>
