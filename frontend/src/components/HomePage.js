@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../components/AuthContext'; // Use the AuthContext to get the token
 import UpcomingShifts from '../components/UpcomingShifts'; // Default import
 import Overview from '../components/Overview'; // Default import
+import './HomePage.css';
 
 const HomePage = () => {
   const [userData, setUserData] = useState(null);
@@ -47,12 +48,15 @@ const HomePage = () => {
     return <div>Loading...</div>; // Show loading message while data is fetched
   }
 
-  // Personalized greeting message
-  const welcomeMessage = userData.first_name ? `Welcome back, ${userData.first_name}` : 'Welcome back!';
-
+  // Render the personalized greeting
   return (
     <div>
-      <h2>{welcomeMessage}</h2>
+      <h2>
+        Welcome back
+        {userData.first_name ? `, ` : ''}{/* Add comma only if there is a first name */}
+        {userData.first_name && <i>{userData.first_name}</i>}
+        !
+      </h2>
       {/* Shifts and overview section */}
       <div className="shifts-and-overview">
         <UpcomingShifts />

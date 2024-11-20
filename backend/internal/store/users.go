@@ -25,6 +25,7 @@ type User struct {
 	IsActive  int       `json:"is_active"`
 	RoleID    int64     `json:"role_id"`
 	Role      Role      `json:"role"`
+	ManagerID int64     `json:"manager_id"`
 }
 
 type password struct {
@@ -95,7 +96,7 @@ func (s *UserStore) Create(ctx context.Context, tx *sql.Tx, user *User) error {
 
 func (s *UserStore) GetByID(ctx context.Context, userID int64) (*User, error) {
 	query := `
-		SELECT users.id, email, first_name, last_name, passhash, created_at, roles.*
+		SELECT users.id, email, first_name, last_name, passhash, created_at, roles.*, manager_id
 		FROM users
 		JOIN roles ON (users.role_id = roles.id)
 		WHERE users.id = ? AND is_active = 1
@@ -107,6 +108,7 @@ func (s *UserStore) GetByID(ctx context.Context, userID int64) (*User, error) {
 	user := &User{}
 	var rawFirstName, rawLastName sql.NullString
 	var rawCreatedAt []byte // For scanning the DATETIME field
+	var rawManagerID sql.NullInt64
 
 	err := s.db.QueryRowContext(
 		ctx,
@@ -123,6 +125,7 @@ func (s *UserStore) GetByID(ctx context.Context, userID int64) (*User, error) {
 		&user.Role.Name,
 		&user.Role.Level,
 		&user.Role.Description,
+		&rawManagerID,
 	)
 	if err != nil {
 		switch err {
@@ -146,6 +149,12 @@ func (s *UserStore) GetByID(ctx context.Context, userID int64) (*User, error) {
 		user.LastName = "" // Set a default or handle as needed
 	}
 
+	if rawManagerID.Valid {
+		user.ManagerID = rawManagerID.Int64
+	} else {
+		user.ManagerID = 0 // Set a default or handle as needed
+	}
+
 	// Parse rawCreatedAt into a time.Time value
 	user.CreatedAt, err = time.Parse("2006-01-02 15:04:05", string(rawCreatedAt))
 	if err != nil {
@@ -157,7 +166,7 @@ func (s *UserStore) GetByID(ctx context.Context, userID int64) (*User, error) {
 
 func (s *UserStore) GetByEmail(ctx context.Context, email string) (*User, error) {
 	query := `
-	SELECT users.id, email, first_name, last_name, passhash, created_at, roles.*
+	SELECT users.id, email, first_name, last_name, passhash, created_at, roles.*, manager_id
 	FROM users
 	JOIN roles ON (users.role_id = roles.id)
 	WHERE users.email = ? AND is_active = 1
@@ -169,6 +178,7 @@ func (s *UserStore) GetByEmail(ctx context.Context, email string) (*User, error)
 	user := &User{}
 	var rawFirstName, rawLastName sql.NullString
 	var rawCreatedAt []byte // For scanning the DATETIME field
+	var rawManagerID sql.NullInt64
 
 	err := s.db.QueryRowContext(
 		ctx,
@@ -185,6 +195,7 @@ func (s *UserStore) GetByEmail(ctx context.Context, email string) (*User, error)
 		&user.Role.Name,
 		&user.Role.Level,
 		&user.Role.Description,
+		&rawManagerID,
 	)
 	if err != nil {
 		switch err {
@@ -206,6 +217,12 @@ func (s *UserStore) GetByEmail(ctx context.Context, email string) (*User, error)
 		user.LastName = rawLastName.String
 	} else {
 		user.LastName = "" // Set a default or handle as needed
+	}
+
+	if rawManagerID.Valid {
+		user.ManagerID = rawManagerID.Int64
+	} else {
+		user.ManagerID = 0 // Set a default or handle as needed
 	}
 
 	// Parse rawCreatedAt into a time.Time value
@@ -247,6 +264,16 @@ func (s *UserStore) Activate(ctx context.Context, token string) error {
 
 		// 3. clean the invitations
 		if err := s.deleteUserInvitations(ctx, tx, user.ID); err != nil {
+			return err
+		}
+
+		return nil
+	})
+}
+
+func (s *UserStore) Update(ctx context.Context, user *User) error {
+	return withTx(s.db, ctx, func(tx *sql.Tx) error {
+		if err := s.update(ctx, tx, user); err != nil {
 			return err
 		}
 
@@ -310,12 +337,12 @@ func (s *UserStore) createUserInvitation(ctx context.Context, tx *sql.Tx, token 
 }
 
 func (s *UserStore) update(ctx context.Context, tx *sql.Tx, user *User) error {
-	query := `UPDATE users SET email = ?, is_active = ? WHERE id = ?`
+	query := `UPDATE users SET email = ?, is_active = ?, first_name = ?, last_name = ?, manager_id = ? WHERE id = ?`
 
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
 	defer cancel()
 
-	_, err := tx.ExecContext(ctx, query, user.Email, user.IsActive, user.ID)
+	_, err := tx.ExecContext(ctx, query, user.Email, user.IsActive, user.FirstName, user.LastName, user.ManagerID, user.ID)
 	if err != nil {
 		return err
 	}

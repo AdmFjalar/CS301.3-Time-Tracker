@@ -1,8 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
+
 body {
-  font-family: Arial, sans-serif;
+  font-family: Inter, sans-serif;
   margin: 0;
   padding: 0;
-  background-color: #f4f4f4;
+  background-color: #FFF4E9;
 }
 
 .app-container {
@@ -42,6 +45,7 @@ body {
 .main-content {
   padding: 20px;
   flex-grow: 1;
+  margin-left: 300px;
 }
 
 .main-content h2 {

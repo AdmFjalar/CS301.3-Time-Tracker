@@ -1,29 +1,48 @@
+/* Sidebar Styles */
 .sidebar {
-    background-color: #344e41;
-    color: #fff;
-    padding: 20px;
-    width: 250px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-  }
-  
-  .sidebar h2 {
-    font-size: 24px;
-  }
-  
-  .sidebar nav a {
-    color: #fff;
-    display: block;
-    margin: 10px 0;
-    text-decoration: none;
-  }
-  
-  .signout {
-    background-color: #ff6b6b;
-    border: none;
-    color: white;
-    padding: 10px;
-    cursor: pointer;
-  }
-  
+  position: fixed; /* Fix the sidebar in place */
+  top: 0;           /* Align to the top of the viewport */
+  left: 0;          /* Align to the left of the viewport */
+  height: 100%;     /* Full height of the viewport */
+  background: #3A4A32;
+  color: #FFF4E9!important;
+  padding: 0;
+  width: 250px;     /* Sidebar width */
+  z-index: 1000;    /* Ensure the sidebar is on top of other elements */
+  display: block;   /* Use block layout for stacking items */
+}
+
+/* Sidebar Heading */
+.sidebar h2 {
+  font-size: 24px;
+  font-weight: 900;
+  font-style: italic;
+  margin: 20px 0; /* Adds some space around the heading */
+}
+
+/* Sidebar Navigation */
+.sidebar nav {
+  margin: 0;
+  padding: 0;
+  margin-top: 20px; /* Set distance from the heading */
+  margin-bottom: auto;
+}
+
+/* Sidebar Navigation Links */
+.sidebar nav a {
+  display: block;
+  margin: 10px 0; /* Adds space between links */
+  color: #FFF4E9!important;
+  text-decoration: none;
+}
+
+/* Sign Out Button Style */
+.signout {
+  background-color: #ff6b6b;
+  color: #FFF4E9!important;
+  border: none;
+  padding: 10px;
+  margin-top: 30px; /* Adds margin-top to position sign-out button below nav */
+  margin-bottom: 30px;
+  cursor: pointer;
+}

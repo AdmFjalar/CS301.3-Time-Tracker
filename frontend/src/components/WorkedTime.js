@@ -26,6 +26,7 @@ const WorkedTime = () => {
           },
         });
         const shifts = response.data?.data || [];
+        shifts.reverse();
         setWorkedShifts(shifts);
       } catch (error) {
         setErrorMessage('Error: ' + (error.response?.data?.message || 'Failed to fetch worked shifts'));
