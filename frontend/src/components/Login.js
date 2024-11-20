@@ -39,15 +39,14 @@ const Login = () => {
       </div> */}
       <div className="login-form-container">
         <form onSubmit={handleLogin} className="login-form">
-          <h2>User ID or Email</h2>
+          <h2>Log in</h2>
           <input
             type="text"
-            placeholder="Enter username..."
+            placeholder="Enter email or ID..."
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
           />
-          <h2>Password</h2>
           <input
             type="password"
             placeholder="Enter password..."
