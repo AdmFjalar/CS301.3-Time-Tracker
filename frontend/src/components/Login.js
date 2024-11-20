@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../components/AuthContext';
 import './Login.css';
 
@@ -9,7 +10,7 @@ const Login = () => {
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { signIn } = useAuth();
-  
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -19,10 +20,10 @@ const Login = () => {
         email,
         password,
       });
-      const token = response.data.data;
+      const token = response.data.data; 
       signIn(token);
       setMessage('Login successful!');
-    
+      navigate('/');
     } catch (error) {
       setMessage('Error: ' + (error.response?.data?.message || 'Login failed'));
     } finally {
@@ -34,7 +35,7 @@ const Login = () => {
     <div className="login-container">
       <div className="login-sidebar">
         <h1>Thyme Flies</h1>
-        <p>Time Tracker</p>
+        <p3>Time Tracker</p3>
       </div>
       <div className="login-form-container">
         <form onSubmit={handleLogin} className="login-form">

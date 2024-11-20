@@ -5,8 +5,7 @@ import './App.css'; // Make sure the layout styles are applied
 
 const AppLayout = () => {
   const location = useLocation();
-  const showSidebar = location.pathname !== '/login'; // Only show sidebar when not on the login page
-
+  const showSidebar = location.pathname !== '/login' || location.pathname === '/register';
   return (
     <div className="app-container">
       {showSidebar && <Sidebar />} {/* Conditionally render Sidebar */}

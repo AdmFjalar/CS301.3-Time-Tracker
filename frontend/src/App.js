@@ -6,7 +6,7 @@ import WorkedTime from './components/WorkedTime';
 import Login from './components/Login';
 import Register from './components/Register';
 import Activate from './components/Activate';
-import AppLayout from './AppLayout'; // New component for layout
+import AppLayout from './AppLayout'; 
 import './App.css';
 
 const App = () => {
@@ -18,10 +18,11 @@ const App = () => {
           <Route path="/" element={<AppLayout />}>
             <Route path="/" element={<HomePage />} />
             <Route path="/worked-time" element={<WorkedTime />} />
-            <Route path="/register" element={<Register />} />
             <Route path="/confirm/:token" element={<Activate />} />
           </Route>
-          <Route path="/login" element={<Login />} /> {/* No Sidebar on login page */}
+          <Route path="/login" element={<Login />} /> 
+          <Route path="/register" element={<Register />} />
+         
         </Routes>
       </Router>
     </AuthProvider>
