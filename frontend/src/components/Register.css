@@ -1,0 +1,107 @@
+/* Main container layout */
+.register-container {
+    display: flex;
+    height: 100vh;
+    background-color: #f4eadb;
+  }
+  
+  /* Sidebar styles */
+  .register-sidebar {
+    background-color: #3a5b45;
+    width: 14%;  
+    display: flex;
+    flex-direction: column;
+    align-items: top;
+    justify-content: top    ;
+    color: #ffffff;
+    padding: 20px;
+  }
+  
+  .register-sidebar h1 {
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin: 0;
+  }
+  
+  .register-sidebar p {
+    font-size: 1rem;
+    margin: 0;
+  }
+  
+  /* Register form container */
+  .register-form-container {
+    display: flex;
+    flex-grow: 1;
+    justify-content: center;  
+    align-items: center; 
+    padding: 0 20px;  
+  }
+  
+  /* Register form styling */
+  .register-form {
+    background-color: #d9c8a5;
+    padding: 30px;
+    border-radius: 8px;
+    width: 100%; 
+    max-width: 400px;  
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 20px; 
+    padding-left: 20px;  
+    padding-right: 20px; 
+  }
+  
+  /* Title styling for the register form */
+  .register-form h2 {
+    font-size: 1.6rem;
+    color: #3a5b45;
+    font-weight: bold;
+    margin-bottom: 10px;
+    text-align: center;  
+  }
+  
+  /* Input field styling */
+  .register-form input {
+    width: 100%;  
+    padding: 12px;
+    margin: 10px 0;  
+    border-radius: 5px;
+    border: 1px solid #cccccc;
+    font-size: 1rem;
+    box-sizing: border-box; 
+  }
+  
+  /* Button styling */
+  .register-form button {
+    width: 100%;  
+    padding: 12px;
+    margin-top: 20px;  
+    background-color: #3a5b45;
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    box-sizing: border-box;
+  }
+  
+  .register-form button:hover {
+    background-color: #324a3a;
+  }
+  
+  .register-form button:disabled {
+    background-color: #a1a1a1;
+  }
+  
+  /* Message styling */
+  .register-message {
+    color: red;
+    margin-top: 10px;
+    text-align: center;
+  }
+  
+  
+  
