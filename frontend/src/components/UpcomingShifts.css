@@ -1,8 +1,10 @@
 .upcoming-shifts {
-    background-color: #e4e4e4;
-    padding: 20px;
-    border-radius: 10px;
-    width: 45%;
+  background-color: #E8DBC5;
+  color: #485C3F;
+  padding: 20px;
+  border-radius: 10px;
+  width: fit-content;
+  height: fit-content;
   }
   
   .upcoming-shifts h3 {

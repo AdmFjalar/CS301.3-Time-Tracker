@@ -34,6 +34,10 @@ func (m *MockUserStore) Activate(ctx context.Context, t string) error {
 	return nil
 }
 
+func (m *MockUserStore) Update(ctx context.Context, u *User) error {
+	return nil
+}
+
 func (m *MockUserStore) Delete(ctx context.Context, id int64) error {
 	return nil
 }

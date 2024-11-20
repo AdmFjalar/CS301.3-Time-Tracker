@@ -26,6 +26,7 @@ const WorkedTime = () => {
           },
         });
         const shifts = response.data?.data || [];
+        shifts.reverse();
         setWorkedShifts(shifts);
       } catch (error) {
         setErrorMessage('Error: ' + (error.response?.data?.message || 'Failed to fetch worked shifts'));
@@ -50,16 +51,23 @@ const WorkedTime = () => {
   // Function to format date for display
   const formatShiftDate = (start) => {
     const startDate = new Date(start);
-    return startDate.toLocaleDateString(); // Format the date as MM/DD/YYYY
+    const day = startDate.getDate().toString().padStart(2, '0');
+    const month = (startDate.getMonth() + 1).toString().padStart(2, '0');
+    const year = startDate.getFullYear();
+    return `${day}/${month}-${year}`; // Format the date as DD/MM-YYYY
   };
 
   // Function to format time for display (start-time to end-time)
-  const formatShiftTime = (start, end) => {
-    const startDate = new Date(start);
-    const endDate = new Date(end);
-    const startTime = startDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const endTime = endDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    return `${startTime} - ${endTime}`;
+  const formatShiftTime = (time) => {
+    const timeDate = new Date(time);
+    const timeTime = timeDate.toLocaleTimeString( 'en-NZ', { hour: '2-digit', minute: '2-digit', hour12: false });    
+    return `${timeTime}`;
+  };
+
+  const secondsToTimeSpan = (seconds) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    return `${hours}h ${minutes}m`;
   };
 
   return (
@@ -69,14 +77,18 @@ const WorkedTime = () => {
         <thead>
           <tr>
             <th>Date</th>
-            <th>Time</th>
+            <th>Sign-in</th>
+            <th>Break time</th>
+            <th>Sign-out</th>
           </tr>
         </thead>
         <tbody>
           {workedShifts.map((shift, index) => (
             <tr key={index}>
               <td>{formatShiftDate(shift.SignIn)}</td>
-              <td>{formatShiftTime(shift.SignIn, shift.SignOut)}</td>
+              <td>{formatShiftTime(shift.SignIn)}</td>
+              <td>{secondsToTimeSpan(shift.TotalBreakTime)}</td>
+              <td>{formatShiftTime(shift.SignOut)}</td>
             </tr>
           ))}
         </tbody>

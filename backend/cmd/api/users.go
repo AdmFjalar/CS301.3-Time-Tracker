@@ -88,6 +88,68 @@ func (app *application) activateUserHandler(w http.ResponseWriter, r *http.Reque
 	}
 }
 
+type UpdateUserPayload struct {
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Email     string `json:"email"`
+	ManagerID int64  `json:"manager_id"`
+	RoleID    int64  `json:"role_id"`
+}
+
+func (app *application) updateUserHandler(w http.ResponseWriter, r *http.Request) {
+	var userID int64
+	var err error
+
+	if userIDParam := chi.URLParam(r, "userID"); userIDParam != "" {
+		userID, err = strconv.ParseInt(userIDParam, 10, 64)
+		if err != nil {
+			app.badRequestResponse(w, r, err)
+			return
+		}
+	} else {
+		userID = getUserFromContext(r).ID
+	}
+
+	user, err := app.getUser(r.Context(), userID)
+	if err != nil {
+		switch err {
+		case store.ErrNotFound:
+			app.notFoundResponse(w, r, err)
+			return
+		default:
+			app.internalServerError(w, r, err)
+			return
+		}
+	}
+
+	var payload UpdateUserPayload
+	if err := readJSON(w, r, &payload); err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	if err := Validate.Struct(payload); err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	user.FirstName = payload.FirstName
+	user.LastName = payload.LastName
+	user.Email = payload.Email
+	user.ManagerID = (payload.ManagerID)
+	user.RoleID = (payload.RoleID)
+	user.IsActive = 1
+
+	if err := app.store.Users.Update(r.Context(), user); err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+
+	if err := app.jsonResponse(w, http.StatusOK, user); err != nil {
+		app.internalServerError(w, r, err)
+	}
+}
+
 func getUserFromContext(r *http.Request) *store.User {
 	user, _ := r.Context().Value(userCtx).(*store.User)
 	return user

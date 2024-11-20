@@ -1,8 +1,18 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
+* {
+  font-family: Inter, sans-serif;
+  text-shadow: 0px 3px 5px rgba(0, 0, 0, 0.25);
+}
+
+a {
+  text-shadow: none;
+}
+
 body {
-  font-family: Arial, sans-serif;
   margin: 0;
   padding: 0;
-  background-color: #f4f4f4;
+  background-color: #FFF4E9;
 }
 
 .app-container {
@@ -10,37 +20,22 @@ body {
   height: 100vh;
 }
 
-.sidebar {
-  background-color: #344e41;
-  color: #fff;
-  padding: 20px;
-  width: 250px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.sidebar h2 {
-  font-size: 24px;
-}
-
-.sidebar nav a {
-  color: #fff;
-  display: block;
-  margin: 10px 0;
-  text-decoration: none;
-}
-
-.signout {
+/* .signout {
   background-color: #ff6b6b;
   border: none;
   color: white;
   padding: 10px;
   cursor: pointer;
-}
+} */
 
 .main-content {
+  display: flex;
+  justify-content: space-evenly;
+  align-content: center;
+  
+  margin: auto;
   padding: 20px;
+  margin-left: 17%;
   flex-grow: 1;
 }
 
@@ -53,12 +48,12 @@ body {
   justify-content: space-between;
 }
 
-.upcoming-shifts, .overview {
+/* .upcoming-shifts, .overview {
   background-color: #e4e4e4;
   padding: 20px;
   border-radius: 10px;
   width: 45%;
-}
+} */
 
 .upcoming-shifts ul {
   list-style-type: none;
@@ -87,6 +82,6 @@ button {
   border-radius: 5px;
 }
 
-button:hover {
+button:hover{
   background-color: #3f624b;
 }

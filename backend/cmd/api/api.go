@@ -136,8 +136,8 @@ func (app *application) mount() http.Handler {
 				r.Use(app.timestampsContextMiddleware)
 				r.Get("/", app.checkTimestampOwnership("manager", app.getTimestampHandler))
 
-				r.Patch("/", app.checkTimestampOwnership("manager", app.updateTimestampHandler))
-				r.Delete("/", app.checkTimestampOwnership("manager", app.deleteTimestampHandler))
+				r.Patch("/", app.checkRolePrecedenceMiddleware("manager", app.updateTimestampHandler))
+				r.Delete("/", app.checkRolePrecedenceMiddleware("manager", app.deleteTimestampHandler))
 			})
 		})
 
@@ -151,7 +151,7 @@ func (app *application) mount() http.Handler {
 
 			r.Route("/{userID}", func(r chi.Router) {
 				r.Use(app.AuthTokenMiddleware)
-
+				r.Patch("/", app.checkRolePrecedenceMiddleware("manager", app.updateUserHandler))
 				r.Get("/", app.getUserHandler)
 			})
 

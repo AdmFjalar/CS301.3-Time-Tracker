@@ -140,8 +140,7 @@ const Overview = () => {
   <>
       <h4>Latest shift:</h4> {parseDate(latestShift.SignIn) ? (
         `${parseDate(latestShift.SignIn).toLocaleDateString()} | ${parseDate(latestShift.SignIn).toLocaleTimeString()}`
-      ) : 'Invalid Date'} - 
-      {parseDate(latestShift.SignOut) ? parseDate(latestShift.SignOut).toLocaleTimeString() : 'Invalid Date'}
+      ) : ' Invalid Date'} - {parseDate(latestShift.SignOut) ? parseDate(latestShift.SignOut).toLocaleTimeString() : ' Invalid Date'}
   </>
 ) : null}
 

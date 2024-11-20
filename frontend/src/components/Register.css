@@ -1,8 +1,8 @@
 /* Main container layout */
 .register-container {
     display: flex;
-    height: 100vh;
-    background-color: #f4eadb;
+    height: 100%;
+    /* background-color: #f4eadb; */
   }
   
   /* Sidebar styles */
@@ -14,12 +14,14 @@
     align-items: top;
     justify-content: top    ;
     color: #ffffff;
-    padding: 20px;
+    padding: 30px;
+    text-align: right;
   }
   
   .register-sidebar h1 {
     font-size: 1.8rem;
-    font-weight: bold;
+    font-weight: 900;
+    font-style: italic;
     margin: 0;
   }
   
@@ -42,7 +44,7 @@
     background-color: #d9c8a5;
     padding: 30px;
     border-radius: 8px;
-    width: 100%; 
+    width: 400px; 
     max-width: 400px;  
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     text-align: center;
@@ -59,7 +61,8 @@
     color: #3a5b45;
     font-weight: bold;
     margin-bottom: 10px;
-    text-align: center;  
+    margin-top: 0;
+    text-align: left;  
   }
   
   /* Input field styling */
@@ -98,10 +101,26 @@
   
   /* Message styling */
   .register-message {
-    color: red;
-    margin-top: 10px;
+    color: #3a5b45;
+    margin: 0;
     text-align: center;
+    font-style: italic;
   }
   
-  
-  
+  .back-button {
+    background: none!important;
+    color: #a1a1a1!important;
+    border: none!important;
+    text-decoration: none;
+    margin-right:auto!important;
+    margin-top: 0!important;
+    padding-top: 0!important;
+    text-shadow: none!important;
+    font-size: 0.9rem!important;
+    font-weight: normal!important;
+    width: fit-content!important;
+  }
+
+  .back-button:hover {
+    text-decoration: underline;
+  }

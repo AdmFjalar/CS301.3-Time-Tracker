@@ -1,0 +1,10 @@
+h2 {
+    color: #485C3F;
+}
+
+.shifts-and-overview {
+    display: flex;
+    justify-items: space-between;
+    gap:30px;
+    width: fit-content;
+}

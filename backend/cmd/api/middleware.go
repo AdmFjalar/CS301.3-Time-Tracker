@@ -118,6 +118,25 @@ func (app *application) checkTimestampOwnership(requiredRole string, next http.H
 	})
 }
 
+func (app *application) checkRolePrecedenceMiddleware(requiredRole string, next http.HandlerFunc) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		user := getUserFromContext(r)
+
+		allowed, err := app.checkRolePrecedence(r.Context(), user, requiredRole)
+		if err != nil {
+			app.internalServerError(w, r, err)
+			return
+		}
+
+		if !allowed {
+			app.forbiddenResponse(w, r)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
 func (app *application) checkRolePrecedence(ctx context.Context, user *store.User, roleName string) (bool, error) {
 	role, err := app.store.Roles.GetByName(ctx, roleName)
 	if err != nil {
