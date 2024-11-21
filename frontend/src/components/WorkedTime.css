@@ -6,7 +6,7 @@
   }
   
   .worked-time h2 {
-    font-size: 24px;
+    color: #485C3F;
     margin-bottom: 20px;
     margin-top: 0;
   }
@@ -19,12 +19,35 @@
   table th, table td {
     padding: 15px;
     text-align: left;
-    border-bottom: 1px solid #000000;
+    border-bottom: 2px solid #485C3F;
+    width: 8rem;
+  }
+
+  table tr:last-child td {
+    border-bottom: none;
   }
   
+  
+/* Add left border to every td except the first column */
+table td:not(:first-child){
+  border-left: 2px solid #485C3F; /* Left border color */
+}
+
+table th:not(:first-child) {
+  border-left: 2px solid #485C3F;
+}
+
   table th {
-    background-color: #344e41;
-    color: white;
+    /* background-color: #344e41; */
+    color: #485C3F;
+    font-weight: bolder;
+    font-size: 1.4rem;
+  }
+
+  table td {
+    color: #485C3F;
+    font-weight: 600;
+    font-size: 1.2rem;
   }
 /*   
   table tr:nth-child(even) {

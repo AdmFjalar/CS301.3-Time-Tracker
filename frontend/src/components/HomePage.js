@@ -51,12 +51,12 @@ const HomePage = () => {
   // Render the personalized greeting
   return (
     <div>
-      <h2>
+      <h1 className="greeting">
         Welcome back
         {userData.first_name ? `, ` : ''}{/* Add comma only if there is a first name */}
         {userData.first_name && <i>{userData.first_name}</i>}
         !
-      </h2>
+      </h1>
       {/* Shifts and overview section */}
       <div className="shifts-and-overview">
         <UpcomingShifts />

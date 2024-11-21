@@ -79,6 +79,7 @@ const WorkedTime = () => {
             <th>Date</th>
             <th>Sign-in</th>
             <th>Break time</th>
+            <th>Shift time</th>
             <th>Sign-out</th>
           </tr>
         </thead>
@@ -88,6 +89,7 @@ const WorkedTime = () => {
               <td>{formatShiftDate(shift.SignIn)}</td>
               <td>{formatShiftTime(shift.SignIn)}</td>
               <td>{secondsToTimeSpan(shift.TotalBreakTime)}</td>
+              <td>{secondsToTimeSpan(shift.TotalShiftTime)}</td>
               <td>{formatShiftTime(shift.SignOut)}</td>
             </tr>
           ))}

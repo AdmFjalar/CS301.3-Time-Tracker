@@ -18,7 +18,9 @@ const Sidebar = () => {
 
   return (
     <div className="sidebar">
-      <h1 className="page-title">Thyme Flies</h1>
+      <pre>
+      <h1 className="page-title">☁    Thyme Flies</h1>
+      </pre>
       <p className="page-subtitle">Time Tracker</p>
       {authToken && ( // Only display if user is signed in
         <>

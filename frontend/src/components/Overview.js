@@ -133,7 +133,7 @@ const Overview = () => {
 
   return (
     <div className="overview">
-      <h3>Overview</h3>
+      <h2>Overview</h2>
       
       {/* Display the latest shift's info */}
       {latestShift ? (
