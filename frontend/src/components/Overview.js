@@ -150,7 +150,7 @@ const Overview = () => {
 
         <h4>Total break time (last 7 days):</h4>    {formatTime(shiftStats.totalBreakTime)}<br />
 
-        <h4>Effective work time (last 7 days):</h4> {formatTime(shiftStats.netWorkTime)}
+        <h4>Total work time (last 7 days):</h4> {formatTime(shiftStats.netWorkTime)}
 
       <div className="buttons">
         {isButtonVisible('sign-in') && (

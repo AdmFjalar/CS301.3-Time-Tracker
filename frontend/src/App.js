@@ -3,10 +3,14 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from './components/AuthContext'; // Import AuthProvider
 import HomePage from './components/HomePage';
 import WorkedTime from './components/WorkedTime';
+import ShiftDetails from './components/ShiftDetails';
 import WorkedTimePage from './components/WorkedTimePage';
 import Login from './components/Login';
 import Register from './components/Register';
 import Activate from './components/Activate';
+import UserListPage from './components/UserListPage';
+import UserDetailPage from './components/UserDetailPage';
+import UserProfile from './components/UserProfile';
 import AppLayout from './AppLayout'; 
 import './App.css';
 
@@ -19,7 +23,11 @@ const App = () => {
           <Route path="/" element={<AppLayout />}>
             <Route path="/" element={<HomePage />} />
             <Route path="/worked-time" element={<WorkedTimePage />} />
+            <Route path="/shifts/:id" element={<ShiftDetails />} />
             <Route path="/confirm/:token" element={<Activate />} />
+            <Route path="/user-details" element={<UserProfile />} />
+            <Route path="/users" element={<UserListPage />} />
+            <Route path="/users/:id" element={<UserDetailPage />} />
             <Route path="/login" element={<Login />} /> 
             <Route path="/register" element={<Register />} />
           </Route>

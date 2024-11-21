@@ -98,6 +98,81 @@ func (s *UserStore) Create(ctx context.Context, tx *sql.Tx, user *User) error {
 	return nil
 }
 
+func (s *UserStore) GetAll(ctx context.Context) ([]*User, error) {
+	query := `
+		SELECT users.id, email, first_name, last_name, created_at, roles.*, manager_id
+		FROM users
+		JOIN roles ON (users.role_id = roles.id)
+		WHERE is_active = 1
+	`
+
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
+	rows, err := s.db.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	users := make([]*User, 0)
+	for rows.Next() {
+		user := &User{}
+		var rawFirstName, rawLastName sql.NullString
+		var rawCreatedAt []byte // For scanning the DATETIME field
+		var rawManagerID sql.NullInt64
+
+		err := rows.Scan(
+			&user.ID,
+			&user.Email,
+			&rawFirstName, // Use sql.NullString for nullable first_name
+			&rawLastName,  // Use sql.NullString for nullable last_name
+			&rawCreatedAt, // Scan created_at as raw bytes
+			&user.Role.ID,
+			&user.Role.Name,
+			&user.Role.Level,
+			&user.Role.Description,
+			&rawManagerID,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		// Assign first_name and last_name only if they are not NULL
+		if rawFirstName.Valid {
+			user.FirstName = rawFirstName.String
+		} else {
+			user.FirstName = "" // Set a default or handle as needed
+		}
+
+		if rawLastName.Valid {
+			user.LastName = rawLastName.String
+		} else {
+			user.LastName = "" // Set a default or handle as needed
+		}
+
+		if rawManagerID.Valid {
+			user.ManagerID = rawManagerID.Int64
+		} else {
+			user.ManagerID = 0 // Set a default or handle as needed
+		}
+
+		// Parse rawCreatedAt into a time.Time value
+		user.CreatedAt, err = time.Parse("2006-01-02 15:04:05", string(rawCreatedAt))
+		if err != nil {
+			return nil, err
+		}
+
+		users = append(users, user)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return users, nil
+}
+
 func (s *UserStore) GetByID(ctx context.Context, userID int64) (*User, error) {
 	query := `
 		SELECT users.id, email, first_name, last_name, passhash, created_at, roles.*, manager_id
@@ -285,6 +360,16 @@ func (s *UserStore) Update(ctx context.Context, user *User) error {
 	})
 }
 
+func (s *UserStore) ChangePassword(ctx context.Context, user *User) error {
+	return withTx(s.db, ctx, func(tx *sql.Tx) error {
+		if err := s.updatePassword(ctx, tx, user); err != nil {
+			return err
+		}
+
+		return nil
+	})
+}
+
 func (s *UserStore) getUserFromInvitation(ctx context.Context, tx *sql.Tx, token string) (*User, error) {
 	query := `
 		SELECT u.id, u.email, u.created_at, u.is_active
@@ -347,6 +432,20 @@ func (s *UserStore) update(ctx context.Context, tx *sql.Tx, user *User) error {
 	defer cancel()
 
 	_, err := tx.ExecContext(ctx, query, user.Email, user.IsActive, user.FirstName, user.LastName, user.ManagerID, user.ID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *UserStore) updatePassword(ctx context.Context, tx *sql.Tx, user *User) error {
+	query := `UPDATE users SET passhash = ? WHERE id = ?`
+
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
+	_, err := tx.ExecContext(ctx, query, user.Password.hash, user.ID)
 	if err != nil {
 		return err
 	}

@@ -25,12 +25,14 @@ type Storage struct {
 	}
 
 	Users interface {
+		GetAll(context.Context) ([]*User, error)
 		GetByID(context.Context, int64) (*User, error)
 		GetByEmail(context.Context, string) (*User, error)
 		Create(context.Context, *sql.Tx, *User) error
 		CreateAndInvite(ctx context.Context, user *User, token string, exp time.Duration) error
 		Activate(context.Context, string) error
 		Update(context.Context, *User) error
+		ChangePassword(context.Context, *User) error
 		Delete(context.Context, int64) error
 	}
 

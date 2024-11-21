@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -54,6 +55,19 @@ func (app *application) getUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	if err := app.jsonResponse(w, http.StatusOK, user); err != nil {
 		app.internalServerError(w, r, err)
+	}
+}
+
+func (app *application) getUsersHandler(w http.ResponseWriter, r *http.Request) {
+	users, err := app.store.Users.GetAll(r.Context())
+	if err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+
+	if err := app.jsonResponse(w, http.StatusOK, users); err != nil {
+		app.internalServerError(w, r, err)
+		return
 	}
 }
 
@@ -148,6 +162,30 @@ func (app *application) updateUserHandler(w http.ResponseWriter, r *http.Request
 	if err := app.jsonResponse(w, http.StatusOK, user); err != nil {
 		app.internalServerError(w, r, err)
 	}
+}
+
+func (app *application) deleteUserHandler(w http.ResponseWriter, r *http.Request) {
+	idParam := chi.URLParam(r, "userID")
+	idTemp, err := strconv.Atoi(idParam)
+	id := int64(idTemp)
+	if err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+
+	ctx := r.Context()
+
+	if err := app.store.Users.Delete(ctx, id); err != nil {
+		switch {
+		case errors.Is(err, store.ErrNotFound):
+			app.notFoundResponse(w, r, err)
+		default:
+			app.internalServerError(w, r, err)
+		}
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func getUserFromContext(r *http.Request) *store.User {
