@@ -38,3 +38,18 @@ h4 {
   display: inline-block; /* Makes the heading inline */
   margin-right: auto; /* Optional: Adds some spacing between the heading and text */
 }
+
+.button:disabled {
+  background-color: #d3d3d3; /* A light gray to indicate disabled */
+  cursor: not-allowed; /* Change the cursor to indicate unclickable */
+  opacity: 0.6; /* Reduce opacity for a "darkened" effect */
+}
+
+.start-shift:disabled,
+.stop-shift:disabled,
+.start-break:disabled,
+.end-break:disabled,
+.register-leave:disabled {
+  /* You can customize each button class as needed */
+  opacity: 0.5;
+}
