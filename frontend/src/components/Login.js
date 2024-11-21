@@ -20,10 +20,10 @@ const Login = () => {
         email,
         password,
       });
-      const token = response.data.data; 
+      const token = response.data.data;
       signIn(token);
       setMessage('Login successful!');
-      navigate('/');
+      navigate('/'); // Navigate to the home page on successful login
     } catch (error) {
       setMessage('Error: ' + (error.response?.data?.message || 'Login failed'));
     } finally {
@@ -32,37 +32,45 @@ const Login = () => {
   };
 
   return (
-    <div>
-      {/* <div className="login-sidebar">
-        <h1>Thyme Flies</h1>
-        <p>Time Tracker</p>
-      </div> */}
+    <div className="login-container">
       <div className="login-form-container">
-        <form onSubmit={handleLogin} className="login-form">
+        <div className="login-form">
           <h2>Log in</h2>
-          <input
-            type="text"
-            placeholder="Enter email or ID..."
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-          <input
-            type="password"
-            placeholder="Enter password..."
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-          <button type="submit" disabled={isLoading}>
-            {isLoading ? 'Loading...' : 'Log in'}
-          </button>
+          <form onSubmit={handleLogin}>
+            <input
+              type="email"
+              placeholder="Enter email..."
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+            <input
+              type="password"
+              placeholder="Enter password..."
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+            <button type="submit" disabled={isLoading}>
+              {isLoading ? 'Loading...' : 'Log in'}
+            </button>
+          </form>
           <p className="login-message">{message}</p>
           <div className="login-links">
-            <a href="/register">No account?</a>
-            <a href="/forgot-password">Forgotten password?</a>
+            <button
+              className="link-button"
+              onClick={() => navigate('/register')}
+            >
+              No account?
+            </button>
+            <button
+              className="link-button"
+              onClick={() => navigate('/forgot-password')}
+            >
+              Forgotten password?
+            </button>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );

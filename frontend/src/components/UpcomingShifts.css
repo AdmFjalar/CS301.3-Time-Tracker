@@ -8,7 +8,9 @@
   }
   
   .upcoming-shifts h3 {
-    font-size: 18px;
+    font-size: 1.1rem;;
+    margin-top: 0;
+
   }
   
   .upcoming-shifts ul {
@@ -19,4 +21,3 @@
   .upcoming-shifts li {
     margin-bottom: 10px;
   }
-  
