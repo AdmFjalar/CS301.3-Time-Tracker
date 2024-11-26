@@ -1,126 +1,98 @@
 /* Main container layout */
 .register-container {
-    display: flex;
-    height: 100%;
-    /* background-color: #f4eadb; */
-  }
-  
-  /* Sidebar styles */
-  .register-sidebar {
-    background-color: #3a5b45;
-    width: 14%;  
-    display: flex;
-    flex-direction: column;
-    align-items: top;
-    justify-content: top    ;
-    color: #ffffff;
-    padding: 30px;
-    text-align: right;
-  }
-  
-  .register-sidebar h1 {
-    font-size: 1.8rem;
-    font-weight: 900;
-    font-style: italic;
-    margin: 0;
-  }
-  
-  .register-sidebar p {
-    font-size: 1rem;
-    margin: 0;
-  }
-  
-  /* Register form container */
-  .register-form-container {
-    display: flex;
-    flex-grow: 1;
-    justify-content: center;  
-    align-items: center; 
-    padding: 0 20px;  
-  }
-  
-  /* Register form styling */
-  .register-form {
-    background-color: #d9c8a5;
-    padding: 30px;
-    border-radius: 8px;
-    width: 400px; 
-    max-width: 400px;  
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    gap: 20px; 
-    padding-left: 20px;  
-    padding-right: 20px; 
-  }
-  
-  /* Title styling for the register form */
-  .register-form h2 {
-    font-size: 1.6rem;
-    color: #3a5b45;
-    font-weight: bold;
-    margin-bottom: 10px;
-    margin-top: 0;
-    text-align: left;  
-  }
-  
-  /* Input field styling */
-  .register-form input {
-    width: 100%;  
-    padding: 12px;
-    margin: 10px 0;  
-    border-radius: 5px;
-    border: 1px solid #cccccc;
-    font-size: 1rem;
-    box-sizing: border-box; 
-  }
-  
-  /* Button styling */
-  .register-form button {
-    width: 100%;  
-    padding: 12px;
-    margin-top: 20px;  
-    background-color: #3a5b45;
-    color: #ffffff;
-    border: none;
-    border-radius: 5px;
-    font-size: 1rem;
-    font-weight: bold;
-    cursor: pointer;
-    box-sizing: border-box;
-  }
-  
-  .register-form button:hover {
-    background-color: #324a3a;
-  }
-  
-  .register-form button:disabled {
-    background-color: #a1a1a1;
-  }
-  
-  /* Message styling */
-  .register-message {
-    color: #3a5b45;
-    margin: 0;
-    text-align: center;
-    font-style: italic;
-  }
-  
-  .back-button {
-    background: none!important;
-    color: #a1a1a1!important;
-    border: none!important;
-    text-decoration: none;
-    margin-right:auto!important;
-    margin-top: 0!important;
-    padding-top: 0!important;
-    text-shadow: none!important;
-    font-size: 0.9rem!important;
-    font-weight: normal!important;
-    width: fit-content!important;
-  }
+  display: flex;
+  height: 100%;
+}
 
-  .back-button:hover {
-    text-decoration: underline;
-  }
+/* Register form container */
+.register-form-container {
+  display: flex;
+  flex-grow: 1;
+  justify-content: center;
+  align-items: center;
+  padding: 0 20px;
+}
+
+/* Register form styling */
+.register-form {
+  background-color: #d9c8a5;
+  padding: 25px;
+  border-radius: 8px;
+  width: 400px;
+  max-width: 400px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Title styling for the register form */
+.register-form h2 {
+  color: #3a5b45;
+  font-weight: bold;
+  margin-bottom: 10px;
+  margin-top: 0;
+  text-align: left;
+}
+
+/* Input field styling */
+.register-form input {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  border-radius: 5px;
+  border: 1px solid #cccccc;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+/* Button styling */
+.register-form button[type="submit"] {
+  width: 10rem;
+  padding: 15px 40px;
+  margin-top: 20px;
+  margin-right: 0;
+  background-color: #3a5b45;
+  color: #ffffff;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.register-form button[type="submit"]:hover {
+  background-color: #324a3a;
+}
+
+.register-form button[type="submit"]:disabled {
+  background-color: #a1a1a1;
+}
+
+/* Message styling */
+.register-message {
+  color: #3a5b45;
+  margin: 0;
+  text-align: center;
+  font-style: italic;
+}
+
+/* Styling for the 'Back to Login' button in Register */
+.register-back-button {
+  background: none;
+  color: #3a5b45; /* Matching the text color of the link buttons */
+  border: none;
+  text-decoration: none;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: normal;
+  padding: 0!important;
+  width: fit-content;
+}
+
+.register-back-button:hover {
+  text-decoration: underline; /* Underline on hover like the link buttons in Login */
+  background:none;
+}

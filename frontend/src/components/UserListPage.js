@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../components/AuthContext'; // Use AuthContext for the token
+import { useAuth } from '../components/AuthContext';
+import './UserListPage.css';
 
 const UserListPage = () => {
   const [users, setUsers] = useState([]);
@@ -15,15 +16,15 @@ const UserListPage = () => {
       return;
     }
 
-    // Fetch the list of users
     const fetchUsers = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/v1/users', {
+        const response = await axios.get('http://localhost:8080/v1/users/', {
           headers: {
             Authorization: `Bearer ${authToken}`,
           },
         });
-        setUsers(response.data); // Assuming users data is returned as an array
+
+        setUsers(response.data.data);
       } catch (error) {
         setErrorMessage('Error: ' + (error.response?.data?.message || 'Failed to fetch users'));
       }
@@ -33,23 +34,40 @@ const UserListPage = () => {
   }, [authToken, navigate]);
 
   if (errorMessage) {
-    return <div>{errorMessage}</div>;
+    return <div className="error-message">{errorMessage}</div>;
   }
 
   if (!users.length) {
-    return <div>Loading...</div>;
+    return <div className="loading-message">Loading...</div>;
   }
 
   return (
-    <div>
-      <h2>All Users</h2>
-      <ul>
-        {users.map((user) => (
-          <li key={user.id}>
-            <a href={`/user/${user.id}`}>{user.first_name} {user.last_name}</a>
-          </li>
-        ))}
-      </ul>
+    <div className="user-list-container">
+      <h2 className="user-list-title">All Users</h2>
+      <table className="user-list-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Email</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+          </tr>
+        </thead>
+        <tbody>
+          {users.map((user) => (
+            <tr
+              key={user.id}
+              className="clickable-row"
+              onClick={() => navigate(`/users/${user.id}`)}
+            >
+              <td>{user.id}</td>
+              <td>{user.email}</td>
+              <td>{user.first_name || '-'}</td>
+              <td>{user.last_name || '-'}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 };

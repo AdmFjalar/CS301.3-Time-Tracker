@@ -1,0 +1,25 @@
+.user-list-container {
+    background-color: #E8DBC5;
+    padding: 20px;
+    border-radius: 10px;
+    width: fit-content;
+    margin: 20px auto;
+  }
+  
+  .user-list-title {
+    color: #485C3F;
+    margin-bottom: 20px;
+    margin-top: 0;
+  }
+
+/* Highlight clickable rows */
+.clickable-row {
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  /* Add hover effect for rows */
+  .clickable-row:hover {
+    background-color: #d9c8a5;
+  }
+  

@@ -1,0 +1,32 @@
+.user-profile {
+    background-color: #E8DBC5;
+    padding: 20px;
+    border-radius: 10px;
+    width: fit-content;
+    margin: 20px auto;
+  }
+  
+  .user-profile h2 {
+    color: #485C3F;
+    margin-bottom: 20px;
+    margin-top: 0;
+  }
+  
+  .profile-details {
+    margin-bottom: 20px;
+  }
+  
+  .profile-details p {
+    color: #485C3F;
+    font-size: 1rem;
+    margin-bottom: 10px;
+  }
+  
+  .profile-details strong {
+    font-weight: bold;
+  }
+  
+  .change-password-container {
+    margin-top: 20px;
+  }
+  

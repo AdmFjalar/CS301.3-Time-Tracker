@@ -28,7 +28,7 @@ func NewSendgrid(apiKey, fromEmail string) *SendGridMailer {
 
 func (m *SendGridMailer) Send(templateFile, email string, data any, isSandbox bool) (int, error) {
 	from := mail.NewEmail(FromName, m.fromEmail)
-	to := mail.NewEmail("New user", email)
+	to := mail.NewEmail("User", email)
 
 	// template parsing and building
 	tmpl, err := template.ParseFS(FS, "templates/"+templateFile)

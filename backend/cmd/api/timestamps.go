@@ -99,6 +99,27 @@ func (app *application) getFinishedShiftsHandler(w http.ResponseWriter, r *http.
 	}
 }
 
+func (app *application) getFinishedShiftsByUserHandler(w http.ResponseWriter, r *http.Request) {
+	idParam := chi.URLParam(r, "userID")
+	idTemp, err := strconv.Atoi(idParam)
+	id := int64(idTemp)
+	if err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+
+	shifts, err := app.store.Timestamps.GetFinishedShifts(r.Context(), id)
+	if err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+
+	if err := app.jsonResponse(w, http.StatusOK, shifts); err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+}
+
 func (app *application) deleteTimestampHandler(w http.ResponseWriter, r *http.Request) {
 	idParam := chi.URLParam(r, "timestampID")
 	idTemp, err := strconv.Atoi(idParam)

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -57,6 +58,19 @@ func (app *application) getUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (app *application) getUsersHandler(w http.ResponseWriter, r *http.Request) {
+	users, err := app.store.Users.GetAll(r.Context())
+	if err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+
+	if err := app.jsonResponse(w, http.StatusOK, users); err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+}
+
 // ActivateUser godoc
 //
 //	@Summary		Activates/Register a user
@@ -80,6 +94,41 @@ func (app *application) activateUserHandler(w http.ResponseWriter, r *http.Reque
 		default:
 			app.internalServerError(w, r, err)
 		}
+		return
+	}
+
+	if err := app.jsonResponse(w, http.StatusNoContent, ""); err != nil {
+		app.internalServerError(w, r, err)
+	}
+}
+
+func (app *application) resetPasswordHandler(w http.ResponseWriter, r *http.Request) {
+	token := chi.URLParam(r, "token")
+	var payload ResetPasswordPayload
+	if err := readJSON(w, r, &payload); err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	if err := Validate.Struct(payload); err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	user, err := app.store.Users.GetByEmail(r.Context(), payload.Email)
+	if err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+
+	if err := user.Password.Set(payload.Password); err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+
+	err = app.store.Users.ResetPassword(r.Context(), token, user)
+	if err != nil {
+		app.internalServerError(w, r, err)
 		return
 	}
 
@@ -148,6 +197,30 @@ func (app *application) updateUserHandler(w http.ResponseWriter, r *http.Request
 	if err := app.jsonResponse(w, http.StatusOK, user); err != nil {
 		app.internalServerError(w, r, err)
 	}
+}
+
+func (app *application) deleteUserHandler(w http.ResponseWriter, r *http.Request) {
+	idParam := chi.URLParam(r, "userID")
+	idTemp, err := strconv.Atoi(idParam)
+	id := int64(idTemp)
+	if err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+
+	ctx := r.Context()
+
+	if err := app.store.Users.Delete(ctx, id); err != nil {
+		switch {
+		case errors.Is(err, store.ErrNotFound):
+			app.notFoundResponse(w, r, err)
+		default:
+			app.internalServerError(w, r, err)
+		}
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func getUserFromContext(r *http.Request) *store.User {

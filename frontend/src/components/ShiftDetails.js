@@ -1,13 +1,14 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useAuth } from '../components/AuthContext'; // Import the AuthContext
-import { useNavigate } from 'react-router-dom'; // Import navigate hook from react-router-dom
+import { useAuth } from '../components/AuthContext'; // Assuming you have an AuthContext to provide the token
+import { useNavigate, useParams } from 'react-router-dom'; // Import useParams for URL params and navigate for redirect
 import './WorkedTime.css';
 
-const WorkedTime = () => {
-  const [workedShifts, setWorkedShifts] = useState([]);
-  const [errorMessage, setErrorMessage] = useState('');
+const ShiftDetails = () => {
   const { authToken } = useAuth(); // Get auth token from context
+  const [shiftDetails, setShiftDetails] = useState([]);
+  const [errorMessage, setErrorMessage] = useState('');
+  const { id } = useParams(); // Extract the 'id' param from the URL
   const navigate = useNavigate(); // To navigate if unauthorized
 
   useEffect(() => {
@@ -17,28 +18,26 @@ const WorkedTime = () => {
       return; // Stop execution if no authToken
     }
 
-    // Function to fetch worked shifts
-    const fetchWorkedShifts = async () => {
+    // Function to fetch specific shift details by ID
+    const fetchShiftDetails = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/v1/shifts/', {
+        const response = await axios.get(`http://localhost:8080/v1/shifts/${id}`, {
           headers: {
             Authorization: `Bearer ${authToken}`,
           },
         });
-        const shifts = response.data?.data || [];
-        shifts.reverse();
-        setWorkedShifts(shifts);
+        setShiftDetails(response.data?.data || []); // Set fetched shift details
       } catch (error) {
-        setErrorMessage('Error: ' + (error.response?.data?.message || 'Failed to fetch worked shifts'));
+        setErrorMessage('Error: ' + (error.response?.data?.message || 'Failed to fetch shift details'));
       }
     };
 
-    if (authToken) {
-      fetchWorkedShifts();
+    if (authToken && id) {
+      fetchShiftDetails();
     } else {
-      setErrorMessage('Authorization token is missing.');
+      setErrorMessage('Authorization token is missing or invalid shift ID.');
     }
-  }, [authToken, navigate]);
+  }, [authToken, id, navigate]);
 
   if (!authToken) {
     return <div>Loading...</div>;
@@ -60,7 +59,7 @@ const WorkedTime = () => {
   // Function to format time for display (start-time to end-time)
   const formatShiftTime = (time) => {
     const timeDate = new Date(time);
-    const timeTime = timeDate.toLocaleTimeString( 'en-NZ', { hour: '2-digit', minute: '2-digit', hour12: false });    
+    const timeTime = timeDate.toLocaleTimeString('en-NZ', { hour: '2-digit', minute: '2-digit', hour12: false });
     return `${timeTime}`;
   };
 
@@ -72,7 +71,7 @@ const WorkedTime = () => {
 
   return (
     <div className="worked-time">
-      <h2>Worked Time</h2>
+      <h2>Shift Details</h2>
       <table>
         <thead>
           <tr>
@@ -84,7 +83,7 @@ const WorkedTime = () => {
           </tr>
         </thead>
         <tbody>
-          {workedShifts.map((shift, index) => (
+          {shiftDetails.map((shift, index) => (
             <tr key={index}>
               <td>{formatShiftDate(shift.SignIn)}</td>
               <td>{formatShiftTime(shift.SignIn)}</td>
@@ -99,4 +98,4 @@ const WorkedTime = () => {
   );
 };
 
-export default WorkedTime;
+export default ShiftDetails;

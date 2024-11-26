@@ -126,6 +126,13 @@ const Overview = () => {
     return allowedTransitions && allowedTransitions.split(',').includes(latestStampType); 
   };
 
+  // Determine if a button should be disabled
+  const isButtonDisabled = (stampType) => {
+    if (!latestStampType) return stampType !== 'sign-in'; 
+    const allowedTransitions = validTransitions[stampType]; 
+    return !allowedTransitions || !allowedTransitions.split(',').includes(latestStampType);
+  };
+
   useEffect(() => {
     fetchLatestShift();         
     fetchLatestTimestampType(); 
@@ -133,51 +140,63 @@ const Overview = () => {
 
   return (
     <div className="overview">
-      <h3>Overview</h3>
+      <h2>Overview</h2>
       
       {/* Display the latest shift's info */}
       {latestShift ? (
-  <>
-      <h4>Latest shift:</h4> {parseDate(latestShift.SignIn) ? (
-        `${parseDate(latestShift.SignIn).toLocaleDateString()} | ${parseDate(latestShift.SignIn).toLocaleTimeString()}`
-      ) : ' Invalid Date'} - {parseDate(latestShift.SignOut) ? parseDate(latestShift.SignOut).toLocaleTimeString() : ' Invalid Date'}
-  </>
-) : null}
+        <>
+          <h4>Latest shift:</h4> {parseDate(latestShift.SignIn) ? (
+            `${parseDate(latestShift.SignIn).toLocaleDateString()} | ${parseDate(latestShift.SignIn).toLocaleTimeString()}`
+          ) : ' Invalid Date'} - {parseDate(latestShift.SignOut) ? parseDate(latestShift.SignOut).toLocaleTimeString() : ' Invalid Date'}
+        </>
+      ) : null}
 
       {/* Display aggregated stats for the last 7 days */}
-        <br></br>
-        <h4>Total shift time (last 7 days):</h4>    {formatTime(shiftStats.totalShiftTime)}<br />
-
-        <h4>Total break time (last 7 days):</h4>    {formatTime(shiftStats.totalBreakTime)}<br />
-
-        <h4>Effective work time (last 7 days):</h4> {formatTime(shiftStats.netWorkTime)}
+      <br />
+      <h4>Total shift time (last 7 days):</h4> {formatTime(shiftStats.totalShiftTime)}<br />
+      <h4>Total break time (last 7 days):</h4> {formatTime(shiftStats.totalBreakTime)}<br />
+      <h4>Total work time (last 7 days):</h4> {formatTime(shiftStats.netWorkTime)}
 
       <div className="buttons">
-        {isButtonVisible('sign-in') && (
-          <button className="start-shift" onClick={() => sendTimestamp('sign-in')}>
-            Start shift
-          </button>
-        )}
-        {isButtonVisible('sign-out') && (
-          <button className="stop-shift" onClick={() => sendTimestamp('sign-out')}>
-            Stop shift
-          </button>
-        )}
-        {isButtonVisible('start-break') && (
-          <button className="start-break" onClick={() => sendTimestamp('start-break')}>
-            Start break
-          </button>
-        )}
-        {isButtonVisible('end-break') && (
-          <button className="end-break" onClick={() => sendTimestamp('end-break')}>
-            End break
-          </button>
-        )}
-        {isButtonVisible('register-leave') && (
-          <button className="register-leave" onClick={() => sendTimestamp('register-leave')}>
-            Register leave
-          </button>
-        )}
+        <button 
+          className="start-shift"
+          onClick={() => sendTimestamp('sign-in')}
+          disabled={isButtonDisabled('sign-in')}
+        >
+          Start shift
+        </button>
+
+        <button 
+          className="stop-shift"
+          onClick={() => sendTimestamp('sign-out')}
+          disabled={isButtonDisabled('sign-out')}
+        >
+          Stop shift
+        </button>
+
+        <button 
+          className="start-break"
+          onClick={() => sendTimestamp('start-break')}
+          disabled={isButtonDisabled('start-break')}
+        >
+          Start break
+        </button>
+
+        <button 
+          className="end-break"
+          onClick={() => sendTimestamp('end-break')}
+          disabled={isButtonDisabled('end-break')}
+        >
+          End break
+        </button>
+
+        {/* <button 
+          className="register-leave"
+          onClick={() => sendTimestamp('register-leave')}
+          disabled={isButtonDisabled('register-leave')}
+        >
+          Register leave
+        </button> */}
       </div>
     </div>
   );

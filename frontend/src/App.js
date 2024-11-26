@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from './components/AuthContext'; // Import AuthProvider
 import HomePage from './components/HomePage';
 import WorkedTime from './components/WorkedTime';
+import ShiftDetails from './components/ShiftDetails';
+import WorkedTimePage from './components/WorkedTimePage';
 import Login from './components/Login';
 import Register from './components/Register';
 import Activate from './components/Activate';
@@ -20,12 +22,14 @@ const App = () => {
         <Routes>
           <Route path="/" element={<AppLayout />}>
             <Route path="/" element={<HomePage />} />
-            <Route path="/worked-time" element={<WorkedTime />} />
+            <Route path="/worked-time" element={<WorkedTimePage />} />
+            <Route path="/shifts/:id" element={<ShiftDetails />} />
             <Route path="/confirm/:token" element={<Activate />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/user-details" element={<UserProfile />} />
+            <Route path="/users" element={<UserListPage />} />
+            <Route path="/users/:id" element={<UserDetailPage />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/users" element={<UserListPage />} /> 
-            <Route path="/user/:id" element={<UserDetailPage />} /> 
             <Route path="/forgot-password" element={<ForgotPassword />} /> 
             <Route path="/reset-password/:token" element={<ResetPassword />} /> 
           </Route>

@@ -38,14 +38,14 @@ const Register = () => {
           <form onSubmit={handleRegister}>
             <input
               type="email"
-              placeholder="Enter your email..."
+              placeholder="Enter email..."
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
             />
             <input
               type="password"
-              placeholder="Enter a password..."
+              placeholder="Enter password..."
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               minLength={12}
@@ -61,8 +61,8 @@ const Register = () => {
             </button>
           </form>
           <p className="register-message">{message}</p>
-          <button className="back-button" onClick={() => navigate('/login')}>
-            ← Back to Login
+          <button className="register-back-button" onClick={() => navigate('/login')}>
+            Back to Login
           </button>
         </div>
       </div>

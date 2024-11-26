@@ -4,7 +4,7 @@ import './UpcomingShifts.css'; // Create separate CSS file if needed
 const UpcomingShifts = () => {
   return (
     <div className="upcoming-shifts">
-      <h3>Upcoming Shifts</h3>
+      <h2>Upcoming Shifts</h2>
       <ul>
         <li>1/12 | 06:00 - 16:00</li>
         <li>2/12 | 06:00 - 16:00</li>

@@ -9,6 +9,11 @@ a {
   text-shadow: none;
 }
 
+p, ul {
+  font-weight: 600;
+  font-size: 1.2rem;
+}
+
 body {
   margin: 0;
   padding: 0;

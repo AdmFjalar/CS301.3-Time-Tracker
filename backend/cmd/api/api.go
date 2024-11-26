@@ -88,14 +88,34 @@ type dbConfig struct {
 	maxIdleTime  string
 }
 
+// Mount routes on the given chi router.
+//
+// This sets up the API endpoints according to the following structure:
+//
+// - /v1/health: health check
+// - /v1/debug/vars: debug vars
+// - /v1/swaggers/*: swagger
+// - /v1/users: User endpoints (activate, register, get, update, delete)
+// - /v1/users/{userID}: User endpoints (get, update, delete)
+// - /v1/users/feed: Feed endpoints (get)
+// - /v1/timestamps: Timestamp endpoints (create, get, update, delete)
+// - /v1/timestamps/{timestampID}: Timestamp endpoints (get, update, delete)
+// - /v1/shifts: Shift endpoints (get)
+// - /v1/shifts/{userID}: Shift endpoints (get)
+// - /v1/authentication: Authentication endpoints (register, create token, request password reset, reset password)
+//
+// The rate limiter is enabled if the config.rateLimiter.Enabled flag is set.
+// The rate limiter is set to 10 requests per minute per IP address.
 func (app *application) mount() http.Handler {
 	r := chi.NewRouter()
 
+	// middleware
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 	r.Use(cors.Handler(cors.Options{
+		// Set the allowed origin for CORS
 		AllowedOrigins:   []string{env.GetString("CORS_ALLOWED_ORIGIN", "http://localhost:3000")},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
@@ -104,6 +124,7 @@ func (app *application) mount() http.Handler {
 		MaxAge:           300, // Maximum value not ignored by any of major browsers
 	}))
 
+	// rate limiter
 	if app.config.rateLimiter.Enabled {
 		r.Use(app.RateLimiterMiddleware)
 	}
@@ -113,19 +134,26 @@ func (app *application) mount() http.Handler {
 	// processing should be stopped.
 	r.Use(middleware.Timeout(60 * time.Second))
 
+	// routes
 	r.Route("/v1", func(r chi.Router) {
-		// Operations
+		// health check
 		r.Get("/health", app.healthCheckHandler)
+
+		// debug
 		r.With(app.BasicAuthMiddleware()).Get("/debug/vars", expvar.Handler().ServeHTTP)
 
+		// swagger
 		docsURL := fmt.Sprintf("%s/swagger/doc.json", app.config.addr)
 		r.Get("/swagger/*", httpSwagger.Handler(httpSwagger.URL(docsURL)))
 
+		// user
 		r.Route("/", func(r chi.Router) {
 			r.Use(app.AuthTokenMiddleware)
 			r.Get("/", app.getUserHandler)
+			r.Patch("/change-password", app.changePasswordHandler)
 		})
 
+		// timestamps
 		r.Route("/timestamps", func(r chi.Router) {
 			r.Use(app.AuthTokenMiddleware)
 			r.Post("/", app.createTimestampHandler)
@@ -141,18 +169,27 @@ func (app *application) mount() http.Handler {
 			})
 		})
 
+		// shifts
 		r.Route("/shifts", func(r chi.Router) {
 			r.Use(app.AuthTokenMiddleware)
 			r.Get("/", app.getFinishedShiftsHandler)
+			r.Get("/{userID}", app.checkRolePrecedenceMiddleware("manager", app.getFinishedShiftsByUserHandler))
 		})
 
+		// users
 		r.Route("/users", func(r chi.Router) {
 			r.Put("/activate/{token}", app.activateUserHandler)
+
+			r.Route("/", func(r chi.Router) {
+				r.Use(app.AuthTokenMiddleware)
+				r.Get("/", app.checkRolePrecedenceMiddleware("manager", app.getUsersHandler))
+			})
 
 			r.Route("/{userID}", func(r chi.Router) {
 				r.Use(app.AuthTokenMiddleware)
 				r.Patch("/", app.checkRolePrecedenceMiddleware("manager", app.updateUserHandler))
-				r.Get("/", app.getUserHandler)
+				r.Get("/", app.checkRolePrecedenceMiddleware("manager", app.getUserHandler))
+				r.Delete("/", app.checkRolePrecedenceMiddleware("manager", app.deleteUserHandler))
 			})
 
 			r.Group(func(r chi.Router) {
@@ -161,58 +198,77 @@ func (app *application) mount() http.Handler {
 			})
 		})
 
-		// Public routes
+		// public routes
 		r.Route("/authentication", func(r chi.Router) {
 			r.Post("/user", app.registerUserHandler)
 			r.Post("/token", app.createTokenHandler)
+			r.Post("/request-password-reset", app.requestPasswordResetHandler)
+			r.Put("/reset-password/{token}", app.resetPasswordHandler)
 		})
 	})
 
 	return r
 }
 
+// run starts the http server and listens on the given address. It returns an error
+// when the server has stopped. The server is stopped by sending a SIGINT or
+// SIGTERM signal to the process.
 func (app *application) run(mux http.Handler) error {
 	// Docs
 	docs.SwaggerInfo.Version = version
 	docs.SwaggerInfo.Host = app.config.apiURL
 	docs.SwaggerInfo.BasePath = "/v1"
 
+	// Create a new http server
 	srv := &http.Server{
-		Addr:         app.config.addr,
-		Handler:      mux,
-		WriteTimeout: time.Second * 30,
-		ReadTimeout:  time.Second * 10,
-		IdleTimeout:  time.Minute,
+		Addr:         app.config.addr,  // The address to listen on
+		Handler:      mux,              // The handler to use
+		WriteTimeout: time.Second * 30, // Maximum time to write a response
+		ReadTimeout:  time.Second * 10, // Maximum time to read a request
+		IdleTimeout:  time.Minute,      // Maximum time to keep an idle connection open
 	}
 
+	// Create a channel to receive errors from the shutdown process
 	shutdown := make(chan error)
 
+	// Start a goroutine to handle the shutdown of the server
 	go func() {
+		// Create a channel to receive os signals
 		quit := make(chan os.Signal, 1)
 
+		// Notify the channel of the signals we want to handle
 		signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+
+		// Wait for a signal
 		s := <-quit
 
+		// Create a context with a timeout of 5 seconds
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
+		// Log the signal
 		app.logger.Infow("signal caught", "signal", s.String())
 
+		// Shutdown the server
 		shutdown <- srv.Shutdown(ctx)
 	}()
 
+	// Log that the server has started
 	app.logger.Infow("server has started", "addr", app.config.addr, "env", app.config.env)
 
+	// Start the server
 	err := srv.ListenAndServe()
 	if !errors.Is(err, http.ErrServerClosed) {
 		return err
 	}
 
+	// Wait for the shutdown process to finish
 	err = <-shutdown
 	if err != nil {
 		return err
 	}
 
+	// Log that the server has stopped
 	app.logger.Infow("server has stopped", "addr", app.config.addr, "env", app.config.env)
 
 	return nil

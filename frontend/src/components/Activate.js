@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import './Activate.css';
+import { useNavigate } from 'react-router-dom';
 
 const Activate = () => {
   const { token: urlToken } = useParams(); // Extract token from URL parameters
@@ -9,6 +10,7 @@ const Activate = () => {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false); // Track whether the request is in progress
   const [activated, setActivated] = useState(false); // Track whether activation was successful
+  const navigate = useNavigate();
 
   useEffect(() => {
     // If there's a token in the URL, set it in state
@@ -26,6 +28,9 @@ const Activate = () => {
       await axios.put(`http://localhost:8080/v1/users/activate/${token}`);
       setMessage('Account activated successfully!');
       setActivated(true); // Mark activation as successful
+      setTimeout(() => {
+        navigate('/users');
+      }, 1000);
     } catch (error) {
       setMessage('Error: ' + (error.response?.data?.message || 'Activation failed'));
     } finally {
