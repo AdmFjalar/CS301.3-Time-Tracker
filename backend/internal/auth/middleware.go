@@ -1,4 +1,4 @@
-package main
+package auth
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func AuthTokenMiddleware(authenticator auth.Authenticator, getUser func(context.Context, int64) (*store.User, error)) func(http.Handler) http.Handler {
+func AuthTokenMiddleware(authenticator Authenticator, getUser func(context.Context, int64) (*store.User, error)) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			authHeader := r.Header.Get("Authorization")
@@ -59,28 +59,24 @@ func AuthTokenMiddleware(authenticator auth.Authenticator, getUser func(context.
 func BasicAuthMiddleware(username, pass string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// read the auth header
 			authHeader := r.Header.Get("Authorization")
 			if authHeader == "" {
 				unauthorizedBasicErrorResponse(w, r, fmt.Errorf("authorization header is missing"))
 				return
 			}
 
-			// parse it -> get the base64
 			parts := strings.Split(authHeader, " ")
 			if len(parts) != 2 || parts[0] != "Basic" {
 				unauthorizedBasicErrorResponse(w, r, fmt.Errorf("authorization header is malformed"))
 				return
 			}
 
-			// decode it
 			decoded, err := base64.StdEncoding.DecodeString(parts[1])
 			if err != nil {
 				unauthorizedBasicErrorResponse(w, r, err)
 				return
 			}
 
-			// check the credentials
 			creds := strings.SplitN(string(decoded), ":", 2)
 			if len(creds) != 2 || creds[0] != username || creds[1] != pass {
 				unauthorizedBasicErrorResponse(w, r, fmt.Errorf("invalid credentials"))
