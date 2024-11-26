@@ -3,11 +3,12 @@ import axios from 'axios';
 import { useAuth } from '../components/AuthContext'; // Assuming you have an AuthContext to provide the token
 import './UserProfile.css'; // Assuming you have a separate CSS file for styling
 import ChangePasswordForm from './ChangePasswordForm';
+import { useNavigate } from 'react-router-dom';
 
 const UserProfile = () => {
   const { authToken } = useAuth(); // Get the authToken from the AuthContext
   const [userDetails, setUserDetails] = useState(null); // State to store user details
-
+  const navigate = useNavigate();
   // Fetch user profile data
   const fetchUserProfile = async () => {
     try {
@@ -26,6 +27,10 @@ const UserProfile = () => {
   useEffect(() => {
     if (authToken) {
       fetchUserProfile();
+    }
+    if (!authToken) {
+      navigate('/login');
+      return; // Stop execution if no authToken
     }
   }, [authToken]); // Re-run when the authToken changes
 

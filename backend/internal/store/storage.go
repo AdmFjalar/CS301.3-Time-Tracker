@@ -33,6 +33,8 @@ type Storage struct {
 		Activate(context.Context, string) error
 		Update(context.Context, *User) error
 		ChangePassword(context.Context, *User) error
+		ResetPassword(context.Context, string) error
+		RequestPasswordAndEmailReset(context.Context, *User, string, time.Duration) error
 		Delete(context.Context, int64) error
 	}
 

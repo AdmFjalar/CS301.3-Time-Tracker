@@ -11,6 +11,10 @@ const Sidebar = () => {
   const location = useLocation(); // Get the current location
 
   useEffect(() => {
+    if (!authToken) {
+      navigate('/login');
+      return; // Stop execution if no authToken
+    }
     // Fetch user data to determine their role
     const fetchUserRole = async () => {
       try {

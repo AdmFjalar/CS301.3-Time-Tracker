@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../components/AuthContext';
@@ -10,7 +10,14 @@ const Login = () => {
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { signIn } = useAuth();
+  const { authToken } = useAuth(); // Get the authToken and signOut function from the context
   const navigate = useNavigate();
+
+useEffect(() => {
+  if (authToken) {
+    navigate('/'); // Redirect to the home page if already logged in
+  }
+}, [authToken]);
 
   const handleLogin = async (e) => {
     e.preventDefault();

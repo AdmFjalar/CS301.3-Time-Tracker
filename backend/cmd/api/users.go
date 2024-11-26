@@ -102,6 +102,29 @@ func (app *application) activateUserHandler(w http.ResponseWriter, r *http.Reque
 	}
 }
 
+func (app *application) resetPasswordHandler(w http.ResponseWriter, r *http.Request) {
+	var payload ResetPasswordPayload
+	if err := readJSON(w, r, &payload); err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	if err := Validate.Struct(payload); err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	err := app.store.Users.ResetPassword(r.Context(), payload.Token)
+	if err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+
+	if err := app.jsonResponse(w, http.StatusNoContent, ""); err != nil {
+		app.internalServerError(w, r, err)
+	}
+}
+
 type UpdateUserPayload struct {
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`

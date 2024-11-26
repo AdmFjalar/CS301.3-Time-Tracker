@@ -46,6 +46,14 @@ func (m *MockUserStore) ChangePassword(ctx context.Context, u *User) error {
 	return nil
 }
 
+func (m *MockUserStore) ResetPassword(ctx context.Context, t string) error {
+	return nil
+}
+
+func (m *MockUserStore) RequestPasswordAndEmailReset(ctx context.Context, user *User, token string, exp time.Duration) error {
+	return nil
+}
+
 func (m *MockUserStore) Delete(ctx context.Context, id int64) error {
 	return nil
 }
