@@ -46,7 +46,7 @@ func (m *MockUserStore) ChangePassword(ctx context.Context, u *User) error {
 	return nil
 }
 
-func (m *MockUserStore) ResetPassword(ctx context.Context, t string) error {
+func (m *MockUserStore) ResetPassword(ctx context.Context, t string, u *User) error {
 	return nil
 }
 

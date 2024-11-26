@@ -103,6 +103,7 @@ func (app *application) activateUserHandler(w http.ResponseWriter, r *http.Reque
 }
 
 func (app *application) resetPasswordHandler(w http.ResponseWriter, r *http.Request) {
+	token := chi.URLParam(r, "token")
 	var payload ResetPasswordPayload
 	if err := readJSON(w, r, &payload); err != nil {
 		app.badRequestResponse(w, r, err)
@@ -114,7 +115,18 @@ func (app *application) resetPasswordHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	err := app.store.Users.ResetPassword(r.Context(), payload.Token)
+	user, err := app.store.Users.GetByEmail(r.Context(), payload.Email)
+	if err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+
+	if err := user.Password.Set(payload.Password); err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+
+	err = app.store.Users.ResetPassword(r.Context(), token, user)
 	if err != nil {
 		app.internalServerError(w, r, err)
 		return

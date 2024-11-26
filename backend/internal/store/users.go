@@ -350,9 +350,9 @@ func (s *UserStore) Activate(ctx context.Context, token string) error {
 	})
 }
 
-func (s *UserStore) RequestPasswordAndEmailReset(ctx context.Context, user *User, token string, invitationExp time.Duration) error {
+func (s *UserStore) RequestPasswordAndEmailReset(ctx context.Context, user *User, token string, exp time.Duration) error {
 	return withTx(s.db, ctx, func(tx *sql.Tx) error {
-		if err := s.createUserPasswordReset(ctx, tx, user); err != nil {
+		if err := s.createUserPasswordReset(ctx, tx, token, exp, user); err != nil {
 			return err
 		}
 		return nil
@@ -379,20 +379,14 @@ func (s *UserStore) ChangePassword(ctx context.Context, user *User) error {
 	})
 }
 
-func (s *UserStore) ResetPassword(ctx context.Context, token string) error {
+func (s *UserStore) ResetPassword(ctx context.Context, token string, user *User) error {
 	return withTx(s.db, ctx, func(tx *sql.Tx) error {
-		// 1. find the user that this token belongs to
-		user, err := s.getUserFromPasswordReset(ctx, tx, token)
-		if err != nil {
-			return err
-		}
-
-		// 2. update the user
+		// 1. update the user
 		if err := s.updatePassword(ctx, tx, user); err != nil {
 			return err
 		}
 
-		// 3. clean the password resets
+		// 2. clean the password resets
 		if err := s.deletePasswordResets(ctx, tx, user.ID); err != nil {
 			return err
 		}
@@ -442,16 +436,13 @@ func (s *UserStore) getUserFromPasswordReset(ctx context.Context, tx *sql.Tx, to
 	return user, nil
 }
 
-func (s *UserStore) createUserPasswordReset(ctx context.Context, tx *sql.Tx, user *User) error {
+func (s *UserStore) createUserPasswordReset(ctx context.Context, tx *sql.Tx, token string, exp time.Duration, user *User) error {
 	query := `INSERT INTO password_resets (user_id, token, expiry) VALUES (?, ?, ?)`
 
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
 	defer cancel()
 
-	hash := sha256.Sum256([]byte(user.Email))
-	hashToken := hex.EncodeToString(hash[:])
-
-	_, err := tx.ExecContext(ctx, query, user.ID, hashToken, time.Now().Add(time.Hour))
+	_, err := tx.ExecContext(ctx, query, user.ID, token, time.Now().Add(exp))
 	if err != nil {
 		return err
 	}
