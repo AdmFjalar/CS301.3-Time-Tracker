@@ -5,7 +5,8 @@ import './ResetPassword.css';
 
 const ResetPassword = () => {
   const { token } = useParams(); // Token from URL
-  const [newPassword, setNewPassword] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
@@ -22,14 +23,17 @@ const ResetPassword = () => {
     setLoading(true);
     setMessage('');
 
-    if (newPassword !== confirmPassword) {
+    if (password !== confirmPassword) {
       setMessage('Passwords do not match!');
       setLoading(false);
       return;
     }
 
     try {
-      await axios.post('http://localhost:8080/v1/auth/reset-password', { token, newPassword });
+      const response = await axios.post(`http://localhost:8080/v1/authentication/reset-password/${token}`, {
+        email,
+        password,
+      });
       setMessage('Password reset successful!');
       navigate('/login'); // Redirect to login after successful reset
     } catch (error) {
@@ -44,10 +48,17 @@ const ResetPassword = () => {
       <h2>Reset Password</h2>
       <form onSubmit={handleSubmit}>
         <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <input
           type="password"
           placeholder="New password"
-          value={newPassword}
-          onChange={(e) => setNewPassword(e.target.value)}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
           required
         />
         <input

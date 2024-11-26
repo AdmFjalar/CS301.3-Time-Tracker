@@ -335,13 +335,18 @@ func (s *UserStore) Activate(ctx context.Context, token string) error {
 			return err
 		}
 
-		// 2. update the user
+		// 2. make the user admin if they are the first user
+		if user.ID == 1 {
+			user.Role.ID = 3
+		}
+
+		// 3. update the user
 		user.IsActive = 1
 		if err := s.update(ctx, tx, user); err != nil {
 			return err
 		}
 
-		// 3. clean the invitations
+		// 4. clean the invitations
 		if err := s.deleteUserInvitations(ctx, tx, user.ID); err != nil {
 			return err
 		}

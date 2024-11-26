@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from './components/AuthContext'; // Import AuthProvider
 import HomePage from './components/HomePage';
-import WorkedTime from './components/WorkedTime';
+import UserProfile from './components/UserProfile';
 import ShiftDetails from './components/ShiftDetails';
 import WorkedTimePage from './components/WorkedTimePage';
 import Login from './components/Login';

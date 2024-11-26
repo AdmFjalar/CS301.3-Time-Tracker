@@ -15,7 +15,7 @@ const ForgotPassword = () => {
     setMessage('');
 
     try {
-      await axios.post('http://localhost:8080/v1/auth/forgot-password', { email });
+      await axios.post('http://localhost:8080/v1/authentication/request-password-reset', { email });
       setMessage('Check your email for the password reset link!');
       navigate('/login'); // Redirect to login after successful request
     } catch (error) {
