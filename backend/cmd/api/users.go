@@ -58,6 +58,17 @@ func (app *application) getUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// getUsersHandler godoc
+//
+//	@Summary		Fetches all users
+//	@Description	Fetches all users
+//	@Tags			users
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	[]store.User
+//	@Failure		500	{object}	error
+//	@Security		ApiKeyAuth
+//	@Router			/users [get]
 func (app *application) getUsersHandler(w http.ResponseWriter, r *http.Request) {
 	users, err := app.store.Users.GetAll(r.Context())
 	if err != nil {
@@ -102,6 +113,20 @@ func (app *application) activateUserHandler(w http.ResponseWriter, r *http.Reque
 	}
 }
 
+// resetPasswordHandler godoc
+//
+//	@Summary		Resets a user's password
+//	@Description	Resets a user's password using a reset token
+//	@Tags			users
+//	@Accept			json
+//	@Produce		json
+//	@Param			token	path		string					true	"Reset token"
+//	@Param			payload	body		ResetPasswordPayload	true	"New password and email"
+//	@Success		204		{string}	string					"Password reset"
+//	@Failure		400		{object}	error
+//	@Failure		500		{object}	error
+//	@Security		ApiKeyAuth
+//	@Router			/users/reset-password/{token} [put]
 func (app *application) resetPasswordHandler(w http.ResponseWriter, r *http.Request) {
 	token := chi.URLParam(r, "token")
 	var payload ResetPasswordPayload
@@ -145,6 +170,21 @@ type UpdateUserPayload struct {
 	RoleID    int64  `json:"role_id"`
 }
 
+// updateUserHandler godoc
+//
+//	@Summary		Updates a user profile
+//	@Description	Updates a user profile by ID
+//	@Tags			users
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path		int					true	"User ID"
+//	@Param			payload	body		UpdateUserPayload	true	"Updated user information"
+//	@Success		200		{object}	store.User
+//	@Failure		400		{object}	error
+//	@Failure		404		{object}	error
+//	@Failure		500		{object}	error
+//	@Security		ApiKeyAuth
+//	@Router			/users/{id} [patch]
 func (app *application) updateUserHandler(w http.ResponseWriter, r *http.Request) {
 	var userID int64
 	var err error
@@ -199,6 +239,18 @@ func (app *application) updateUserHandler(w http.ResponseWriter, r *http.Request
 	}
 }
 
+// deleteUserHandler godoc
+//
+//	@Summary		Deletes a user
+//	@Description	Deletes a user by ID
+//	@Tags			users
+//	@Produce		json
+//	@Param			id	path		int	true	"User ID"
+//	@Success		204	{string}	string	"User deleted"
+//	@Failure		404	{object}	error
+//	@Failure		500	{object}	error
+//	@Security		ApiKeyAuth
+//	@Router			/users/{id} [delete]
 func (app *application) deleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	idParam := chi.URLParam(r, "userID")
 	idTemp, err := strconv.Atoi(idParam)

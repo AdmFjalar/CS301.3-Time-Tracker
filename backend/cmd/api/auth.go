@@ -13,28 +13,39 @@ import (
 	"github.com/google/uuid"
 )
 
+// RegisterUserPayload represents the payload for registering a new user.
 type RegisterUserPayload struct {
 	Email    string `json:"email" validate:"required,email,max=255"`
 	Password string `json:"password" validate:"required,min=3,max=72"`
 }
 
+// UserWithToken represents a user along with an authentication token.
 type UserWithToken struct {
 	*store.User
 	Token string `json:"token"`
 }
 
+// ChangePasswordPayload represents the payload for changing a user's password.
 type ChangePasswordPayload struct {
 	OldPassword string `json:"old_password" validate:"required"`
 	NewPassword string `json:"new_password" validate:"required,min=3,max=72"`
 }
 
+// ResetPasswordPayload represents the payload for resetting a user's password.
 type ResetPasswordPayload struct {
 	Password string `json:"password" validate:"required,min=3,max=72"`
 	Email    string `json:"email" validate:"required,email,max=255"`
 }
 
+// RequestPasswordResetPayload represents the payload for requesting a password reset.
 type RequestPasswordResetPayload struct {
 	Email string `json:"email" validate:"required,email,max=255"`
+}
+
+// CreateUserTokenPayload represents the payload for creating a user token.
+type CreateUserTokenPayload struct {
+	Email    string `json:"email" validate:"required,email,max=255"`
+	Password string `json:"password" validate:"required,min=3,max=72"`
 }
 
 // registerUserHandler godoc
@@ -201,11 +212,6 @@ func (app *application) requestPasswordResetHandler(w http.ResponseWriter, r *ht
 	if err := app.jsonResponse(w, http.StatusOK, nil); err != nil {
 		app.internalServerError(w, r, err)
 	}
-}
-
-type CreateUserTokenPayload struct {
-	Email    string `json:"email" validate:"required,email,max=255"`
-	Password string `json:"password" validate:"required,min=3,max=72"`
 }
 
 // createTokenHandler godoc

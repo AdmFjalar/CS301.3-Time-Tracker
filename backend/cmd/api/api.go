@@ -26,6 +26,7 @@ import (
 	"github.com/AdmFjalar/CS301.3-Time-Tracker/internal/store/cache"
 )
 
+// application holds the configuration, dependencies, and shared resources for the application.
 type application struct {
 	config        config
 	store         store.Storage
@@ -36,6 +37,7 @@ type application struct {
 	rateLimiter   ratelimiter.Limiter
 }
 
+// config holds the configuration settings for the application.
 type config struct {
 	addr        string
 	db          dbConfig
@@ -88,24 +90,13 @@ type dbConfig struct {
 	maxIdleTime  string
 }
 
-// Mount routes on the given chi router.
+// mount godoc
 //
-// This sets up the API endpoints according to the following structure:
-//
-// - /v1/health: health check
-// - /v1/debug/vars: debug vars
-// - /v1/swaggers/*: swagger
-// - /v1/users: User endpoints (activate, register, get, update, delete)
-// - /v1/users/{userID}: User endpoints (get, update, delete)
-// - /v1/users/feed: Feed endpoints (get)
-// - /v1/timestamps: Timestamp endpoints (create, get, update, delete)
-// - /v1/timestamps/{timestampID}: Timestamp endpoints (get, update, delete)
-// - /v1/shifts: Shift endpoints (get)
-// - /v1/shifts/{userID}: Shift endpoints (get)
-// - /v1/authentication: Authentication endpoints (register, create token, request password reset, reset password)
-//
-// The rate limiter is enabled if the config.rateLimiter.Enabled flag is set.
-// The rate limiter is set to 10 requests per minute per IP address.
+//	@Summary		Mounts the application routes
+//	@Description	Sets up the API endpoints and middleware
+//	@Tags			routes
+//	@Produce		json
+//	@Router			/mount [get]
 func (app *application) mount() http.Handler {
 	r := chi.NewRouter()
 
@@ -210,9 +201,13 @@ func (app *application) mount() http.Handler {
 	return r
 }
 
-// run starts the http server and listens on the given address. It returns an error
-// when the server has stopped. The server is stopped by sending a SIGINT or
-// SIGTERM signal to the process.
+// run godoc
+//
+//	@Summary		Runs the application
+//	@Description	Starts the HTTP server and listens for incoming requests
+//	@Tags			server
+//	@Produce		json
+//	@Router			/run [get]
 func (app *application) run(mux http.Handler) error {
 	// Docs
 	docs.SwaggerInfo.Version = version

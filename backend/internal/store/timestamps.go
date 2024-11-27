@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+// Timestamp represents a timestamp entry in the system.
 type Timestamp struct {
 	ID        int64     `json:"id"`
 	UserID    int64     `json:"user_id"`
@@ -19,6 +20,7 @@ type Timestamp struct {
 	Version   int       `json:"version"`
 }
 
+// Shift represents a work shift with sign-in, sign-out, and break times.
 type Shift struct {
 	SignIn         time.Time     `json:"SignIn"`
 	SignOut        time.Time     `json:"SignOut"`
@@ -28,10 +30,12 @@ type Shift struct {
 	NetWorkTime    float64       `json:"NetWorkTime"`    // NetWorkTime in seconds (float64)
 }
 
+// TimestampStore provides methods for managing timestamps in the database.
 type TimestampStore struct {
 	db *sql.DB
 }
 
+// GetUserFeed retrieves the user feed based on the provided query parameters.
 func (s *TimestampStore) GetUserFeed(ctx context.Context, userID int64, fq Query) ([]Timestamp, error) {
 	query := `
 		SELECT 
@@ -89,7 +93,7 @@ func (s *TimestampStore) GetUserFeed(ctx context.Context, userID int64, fq Query
 	return feed, nil
 }
 
-// GetLatestTimestamp retrieves the most recent timestamp for a specific user
+// GetLatestTimestamp retrieves the most recent timestamp for a specific user.
 func (s *TimestampStore) GetLatestTimestamp(ctx context.Context, userID int64) (*Timestamp, error) {
 	// Define a query to fetch only the latest timestamp for the user
 	fq := Query{
@@ -113,6 +117,7 @@ func (s *TimestampStore) GetLatestTimestamp(ctx context.Context, userID int64) (
 	return &timestamps[0], nil
 }
 
+// GetFinishedShifts retrieves finished shifts for a specific user.
 func (s *TimestampStore) GetFinishedShifts(ctx context.Context, userID int64) ([]Shift, error) {
 	query := `
 		SELECT stamp_type, time
@@ -191,6 +196,7 @@ func (s *TimestampStore) GetFinishedShifts(ctx context.Context, userID int64) ([
 	return shifts, nil
 }
 
+// Create inserts a new timestamp into the database.
 func (s *TimestampStore) Create(ctx context.Context, timestamp *Timestamp) error {
 	// Define allowed previous states for each stamp type
 	validTransitions := map[string]string{
@@ -256,6 +262,7 @@ func (s *TimestampStore) Create(ctx context.Context, timestamp *Timestamp) error
 	return nil
 }
 
+// GetByID retrieves a timestamp by its ID.
 func (s *TimestampStore) GetByID(ctx context.Context, id int64) (*Timestamp, error) {
 	query := `
 		SELECT id, user_id, stamp_type, time, created_at, updated_at, version
@@ -312,6 +319,7 @@ func (s *TimestampStore) GetByID(ctx context.Context, id int64) (*Timestamp, err
 	return &timestamp, nil
 }
 
+// Delete removes a timestamp from the database by its ID.
 func (s *TimestampStore) Delete(ctx context.Context, timestampID int64) error {
 	query := `DELETE FROM timestamps WHERE id = ?`
 
@@ -333,6 +341,7 @@ func (s *TimestampStore) Delete(ctx context.Context, timestampID int64) error {
 	return nil
 }
 
+// Update modifies an existing timestamp in the database.
 func (s *TimestampStore) Update(ctx context.Context, timestamp *Timestamp) error {
 	// SQL query to update a timestamp based on its ID and version, and to increment the version
 	query := `

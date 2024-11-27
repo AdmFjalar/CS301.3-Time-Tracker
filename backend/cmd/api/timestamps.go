@@ -15,11 +15,25 @@ type timestampKey string
 
 const timestampCtx timestampKey = "timestamp"
 
+// CreateTimestampPayload represents the payload for creating a new timestamp.
 type CreateTimestampPayload struct {
-	StampType string `json:"stamp_type"`
-	StampTime string `json:"stamp_time"`
+	StampType string `json:"stamp_type" validate:"required"`
+	StampTime string `json:"stamp_time" validate:"required"`
 }
 
+// createTimestampHandler godoc
+//
+//	@Summary		Creates a timestamp
+//	@Description	Creates a timestamp for a user
+//	@Tags			timestamps
+//	@Accept			json
+//	@Produce		json
+//	@Param			payload	body		CreateTimestampPayload	true	"Timestamp information"
+//	@Success		201		{object}	store.Timestamp			"Timestamp created"
+//	@Failure		400		{object}	error
+//	@Failure		500		{object}	error
+//	@Security		ApiKeyAuth
+//	@Router			/timestamps [post]
 func (app *application) createTimestampHandler(w http.ResponseWriter, r *http.Request) {
 
 	var payload CreateTimestampPayload
@@ -60,6 +74,20 @@ func (app *application) createTimestampHandler(w http.ResponseWriter, r *http.Re
 	}
 }
 
+// getTimestampHandler godoc
+//
+//	@Summary		Fetches a timestamp
+//	@Description	Fetches a timestamp by ID
+//	@Tags			timestamps
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		int	true	"Timestamp ID"
+//	@Success		200	{object}	store.Timestamp
+//	@Failure		400	{object}	error
+//	@Failure		404	{object}	error
+//	@Failure		500	{object}	error
+//	@Security		ApiKeyAuth
+//	@Router			/timestamps/{id} [get]
 func (app *application) getTimestampHandler(w http.ResponseWriter, r *http.Request) {
 	timestamp := getTimestampFromCtx(r)
 
@@ -69,6 +97,17 @@ func (app *application) getTimestampHandler(w http.ResponseWriter, r *http.Reque
 	}
 }
 
+// getLatestTimestampHandler godoc
+//
+//	@Summary		Fetches the latest timestamp
+//	@Description	Fetches the most recent timestamp for a user
+//	@Tags			timestamps
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	store.Timestamp
+//	@Failure		500	{object}	error
+//	@Security		ApiKeyAuth
+//	@Router			/timestamps/latest [get]
 func (app *application) getLatestTimestampHandler(w http.ResponseWriter, r *http.Request) {
 	user := getUserFromContext(r)
 
@@ -84,6 +123,17 @@ func (app *application) getLatestTimestampHandler(w http.ResponseWriter, r *http
 	}
 }
 
+// getFinishedShiftsHandler godoc
+//
+//	@Summary		Fetches finished shifts
+//	@Description	Fetches finished shifts for a user
+//	@Tags			shifts
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	[]store.Shift
+//	@Failure		500	{object}	error
+//	@Security		ApiKeyAuth
+//	@Router			/shifts [get]
 func (app *application) getFinishedShiftsHandler(w http.ResponseWriter, r *http.Request) {
 	user := getUserFromContext(r)
 
@@ -99,6 +149,18 @@ func (app *application) getFinishedShiftsHandler(w http.ResponseWriter, r *http.
 	}
 }
 
+// getFinishedShiftsByUserHandler godoc
+//
+//	@Summary		Fetches finished shifts by user ID
+//	@Description	Fetches finished shifts for a specific user by their ID
+//	@Tags			shifts
+//	@Accept			json
+//	@Produce		json
+//	@Param			userID	path		int	true	"User ID"
+//	@Success		200	{object}	[]store.Shift
+//	@Failure		500	{object}	error
+//	@Security		ApiKeyAuth
+//	@Router			/shifts/{userID} [get]
 func (app *application) getFinishedShiftsByUserHandler(w http.ResponseWriter, r *http.Request) {
 	idParam := chi.URLParam(r, "userID")
 	idTemp, err := strconv.Atoi(idParam)
@@ -120,6 +182,18 @@ func (app *application) getFinishedShiftsByUserHandler(w http.ResponseWriter, r 
 	}
 }
 
+// deleteTimestampHandler godoc
+//
+//	@Summary		Deletes a timestamp
+//	@Description	Deletes a timestamp by ID
+//	@Tags			timestamps
+//	@Produce		json
+//	@Param			id	path		int	true	"Timestamp ID"
+//	@Success		204	{string}	string	"Timestamp deleted"
+//	@Failure		404	{object}	error
+//	@Failure		500	{object}	error
+//	@Security		ApiKeyAuth
+//	@Router			/timestamps/{id} [delete]
 func (app *application) deleteTimestampHandler(w http.ResponseWriter, r *http.Request) {
 	idParam := chi.URLParam(r, "timestampID")
 	idTemp, err := strconv.Atoi(idParam)
@@ -144,11 +218,27 @@ func (app *application) deleteTimestampHandler(w http.ResponseWriter, r *http.Re
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// UpdateTimestampPayload represents the payload for updating an existing timestamp.
 type UpdateTimestampPayload struct {
-	StampType string `json:"stamp_type"`
-	StampTime string `json:"stamp_time"`
+	StampType string `json:"stamp_type" validate:"required"`
+	StampTime string `json:"stamp_time" validate:"required"`
 }
 
+// updateTimestampHandler godoc
+//
+//	@Summary		Updates a timestamp
+//	@Description	Updates a timestamp by ID
+//	@Tags			timestamps
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path		int						true	"Timestamp ID"
+//	@Param			payload	body		UpdateTimestampPayload	true	"Updated timestamp information"
+//	@Success		200		{object}	store.Timestamp
+//	@Failure		400		{object}	error
+//	@Failure		404		{object}	error
+//	@Failure		500		{object}	error
+//	@Security		ApiKeyAuth
+//	@Router			/timestamps/{id} [patch]
 func (app *application) updateTimestampHandler(w http.ResponseWriter, r *http.Request) {
 	timestamp := getTimestampFromCtx(r)
 
@@ -184,6 +274,13 @@ func (app *application) updateTimestampHandler(w http.ResponseWriter, r *http.Re
 	}
 }
 
+// timestampsContextMiddleware godoc
+//
+//	@Summary		Timestamps Context Middleware
+//	@Description	Middleware that retrieves a timestamp by ID and adds it to the request context
+//	@Tags			middleware
+//	@Produce		json
+//	@Router			/middleware/timestamps-context [get]
 func (app *application) timestampsContextMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		idParam := chi.URLParam(r, "timestampID")
@@ -212,11 +309,25 @@ func (app *application) timestampsContextMiddleware(next http.Handler) http.Hand
 	})
 }
 
+// getTimestampFromCtx godoc
+//
+//	@Summary		Get Timestamp from Context
+//	@Description	Retrieves the timestamp from the request context
+//	@Tags			middleware
+//	@Produce		json
+//	@Router			/middleware/get-timestamp-from-ctx [get]
 func getTimestampFromCtx(r *http.Request) *store.Timestamp {
 	timestamp, _ := r.Context().Value(timestampCtx).(*store.Timestamp)
 	return timestamp
 }
 
+// updateTimestamp godoc
+//
+//	@Summary		Update Timestamp
+//	@Description	Updates a timestamp in the store and deletes the cache entry
+//	@Tags			timestamps
+//	@Produce		json
+//	@Router			/timestamps/update [patch]
 func (app *application) updateTimestamp(ctx context.Context, timestamp *store.Timestamp) error {
 	if err := app.store.Timestamps.Update(ctx, timestamp); err != nil {
 		return err

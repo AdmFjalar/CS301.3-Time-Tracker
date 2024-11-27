@@ -12,6 +12,13 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
+// AuthTokenMiddleware godoc
+//
+//	@Summary		Auth Token Middleware
+//	@Description	Middleware that validates the JWT token in the Authorization header
+//	@Tags			middleware
+//	@Produce		json
+//	@Router			/middleware/auth-token [get]
 func (app *application) AuthTokenMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
@@ -54,6 +61,13 @@ func (app *application) AuthTokenMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+// BasicAuthMiddleware godoc
+//
+//	@Summary		Basic Auth Middleware
+//	@Description	Middleware that validates the Basic Auth credentials in the Authorization header
+//	@Tags			middleware
+//	@Produce		json
+//	@Router			/middleware/basic-auth [get]
 func (app *application) BasicAuthMiddleware() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -93,6 +107,13 @@ func (app *application) BasicAuthMiddleware() func(http.Handler) http.Handler {
 	}
 }
 
+// checkTimestampOwnership godoc
+//
+//	@Summary		Check Timestamp Ownership Middleware
+//	@Description	Middleware that checks if the user owns the timestamp or has the required role
+//	@Tags			middleware
+//	@Produce		json
+//	@Router			/middleware/check-timestamp-ownership [get]
 func (app *application) checkTimestampOwnership(requiredRole string, next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		user := getUserFromContext(r)
@@ -118,6 +139,13 @@ func (app *application) checkTimestampOwnership(requiredRole string, next http.H
 	})
 }
 
+// checkRolePrecedenceMiddleware godoc
+//
+//	@Summary		Check Role Precedence Middleware
+//	@Description	Middleware that checks if the user has the required role precedence
+//	@Tags			middleware
+//	@Produce		json
+//	@Router			/middleware/check-role-precedence [get]
 func (app *application) checkRolePrecedenceMiddleware(requiredRole string, next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		user := getUserFromContext(r)
@@ -137,6 +165,13 @@ func (app *application) checkRolePrecedenceMiddleware(requiredRole string, next 
 	})
 }
 
+// checkRolePrecedence godoc
+//
+//	@Summary		Check Role Precedence
+//	@Description	Checks if the user's role has the required precedence
+//	@Tags			middleware
+//	@Produce		json
+//	@Router			/middleware/check-role-precedence [get]
 func (app *application) checkRolePrecedence(ctx context.Context, user *store.User, roleName string) (bool, error) {
 	role, err := app.store.Roles.GetByName(ctx, roleName)
 	if err != nil {
@@ -146,6 +181,13 @@ func (app *application) checkRolePrecedence(ctx context.Context, user *store.Use
 	return user.Role.Level >= role.Level, nil
 }
 
+// getUser godoc
+//
+//	@Summary		Get User
+//	@Description	Retrieves the user from the cache or the database
+//	@Tags			middleware
+//	@Produce		json
+//	@Router			/middleware/get-user [get]
 func (app *application) getUser(ctx context.Context, userID int64) (*store.User, error) {
 	if !app.config.redisCfg.enabled {
 		return app.store.Users.GetByID(ctx, userID)
@@ -170,6 +212,13 @@ func (app *application) getUser(ctx context.Context, userID int64) (*store.User,
 	return user, nil
 }
 
+// RateLimiterMiddleware godoc
+//
+//	@Summary		Rate Limiter Middleware
+//	@Description	Middleware that applies rate limiting to incoming requests
+//	@Tags			middleware
+//	@Produce		json
+//	@Router			/middleware/rate-limiter [get]
 func (app *application) RateLimiterMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if app.config.rateLimiter.Enabled {

@@ -35,6 +35,9 @@ const version = "1.0.0"
 // @in							header
 // @name						Authorization
 // @description
+
+// main is the entry point for the application. It initializes the configuration, logger, database, cache, rate limiter, mailer, and authenticator.
+// It also sets up the application dependencies and starts the HTTP server.
 func main() {
 	cfg := config{
 		addr:        env.GetString("ADDR", ""),

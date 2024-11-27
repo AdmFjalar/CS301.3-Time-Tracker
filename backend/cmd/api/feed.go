@@ -25,6 +25,7 @@ import (
 //	@Security		ApiKeyAuth
 //	@Router			/users/feed [get]
 func (app *application) getUserFeedHandler(w http.ResponseWriter, r *http.Request) {
+	// Initialize the query parameters with default values
 	fq := store.Query{
 		Limit:  20,
 		Offset: 0,
@@ -32,26 +33,31 @@ func (app *application) getUserFeedHandler(w http.ResponseWriter, r *http.Reques
 		Search: "",
 	}
 
+	// Parse the query parameters from the request
 	fq, err := fq.Parse(r)
 	if err != nil {
 		app.badRequestResponse(w, r, err)
 		return
 	}
 
+	// Validate the parsed query parameters
 	if err := Validate.Struct(fq); err != nil {
 		app.badRequestResponse(w, r, err)
 		return
 	}
 
+	// Retrieve the user from the request context
 	ctx := r.Context()
 	user := getUserFromContext(r)
 
+	// Fetch the user feed from the store
 	feed, err := app.store.Timestamps.GetUserFeed(ctx, user.ID, fq)
 	if err != nil {
 		app.internalServerError(w, r, err)
 		return
 	}
 
+	// Send the user feed as a JSON response
 	if err := app.jsonResponse(w, http.StatusOK, feed); err != nil {
 		app.internalServerError(w, r, err)
 	}
