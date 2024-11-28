@@ -18,8 +18,8 @@ import (
 
 const version = "1.0.0"
 
-//	@title			GopherSocial API
-//	@description	API for GopherSocial, a social network for gohpers
+//	@title			Thyme Flies API
+//	@description	API for Thyme Flies, a time-tracking application
 //	@termsOfService	http://swagger.io/terms/
 
 //	@contact.name	API Support
