@@ -9,11 +9,13 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
+// userKey is a custom type used for storing user information in the context.
 type userKey string
 
+// userCtx is a constant key used to store and retrieve user information from the context.
 const userCtx userKey = "user"
 
-// GetUser godoc
+// getUserHandler godoc
 //
 //	@Summary		Fetches a user profile
 //	@Description	Fetches a user profile by ID
@@ -82,7 +84,7 @@ func (app *application) getUsersHandler(w http.ResponseWriter, r *http.Request) 
 	}
 }
 
-// ActivateUser godoc
+// activateUserHandler godoc
 //
 //	@Summary		Activates/Register a user
 //	@Description	Activates/Register a user by invitation token
@@ -91,7 +93,7 @@ func (app *application) getUsersHandler(w http.ResponseWriter, r *http.Request) 
 //	@Param			token	path		string	true	"Invitation token"
 //	@Success		204		{string}	string	"User activated"
 //	@Failure		404		{object}	error
-//	@Failure		500		{object}	error
+//	@Failure		500	{object}	error
 //	@Security		ApiKeyAuth
 //	@Router			/users/activate/{token} [put]
 func (app *application) activateUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -162,6 +164,7 @@ func (app *application) resetPasswordHandler(w http.ResponseWriter, r *http.Requ
 	}
 }
 
+// UpdateUserPayload represents the payload for updating a user profile.
 type UpdateUserPayload struct {
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
@@ -275,6 +278,7 @@ func (app *application) deleteUserHandler(w http.ResponseWriter, r *http.Request
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// getUserFromContext retrieves the user information from the request context.
 func getUserFromContext(r *http.Request) *store.User {
 	user, _ := r.Context().Value(userCtx).(*store.User)
 	return user

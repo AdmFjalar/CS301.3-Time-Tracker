@@ -35,7 +35,19 @@ type TimestampStore struct {
 	db *sql.DB
 }
 
-// GetUserFeed retrieves the user feed based on the provided query parameters.
+// GetUserFeed godoc
+//
+//	@Summary		Retrieves the user feed
+//	@Description	Retrieves the user feed based on the provided query parameters
+//	@Tags			timestamps
+//	@Produce		json
+//	@Param			userID	query		int		true	"User ID"
+//	@Param			limit	query		int		false	"Limit"
+//	@Param			offset	query		int		false	"Offset"
+//	@Param			sort	query		string	false	"Sort"
+//	@Success		200		{object}	[]Timestamp
+//	@Failure		500		{object}	error
+//	@Router			/timestamps/feed [get]
 func (s *TimestampStore) GetUserFeed(ctx context.Context, userID int64, fq Query) ([]Timestamp, error) {
 	query := `
 		SELECT 
@@ -93,7 +105,16 @@ func (s *TimestampStore) GetUserFeed(ctx context.Context, userID int64, fq Query
 	return feed, nil
 }
 
-// GetLatestTimestamp retrieves the most recent timestamp for a specific user.
+// GetLatestTimestamp godoc
+//
+//	@Summary		Retrieves the latest timestamp
+//	@Description	Retrieves the most recent timestamp for a specific user
+//	@Tags			timestamps
+//	@Produce		json
+//	@Param			userID	query		int		true	"User ID"
+//	@Success		200		{object}	Timestamp
+//	@Failure		500		{object}	error
+//	@Router			/timestamps/latest [get]
 func (s *TimestampStore) GetLatestTimestamp(ctx context.Context, userID int64) (*Timestamp, error) {
 	// Define a query to fetch only the latest timestamp for the user
 	fq := Query{
@@ -117,7 +138,16 @@ func (s *TimestampStore) GetLatestTimestamp(ctx context.Context, userID int64) (
 	return &timestamps[0], nil
 }
 
-// GetFinishedShifts retrieves finished shifts for a specific user.
+// GetFinishedShifts godoc
+//
+//	@Summary		Retrieves finished shifts
+//	@Description	Retrieves finished shifts for a specific user
+//	@Tags			shifts
+//	@Produce		json
+//	@Param			userID	query		int		true	"User ID"
+//	@Success		200		{object}	[]Shift
+//	@Failure		500		{object}	error
+//	@Router			/shifts [get]
 func (s *TimestampStore) GetFinishedShifts(ctx context.Context, userID int64) ([]Shift, error) {
 	query := `
 		SELECT stamp_type, time
@@ -196,7 +226,18 @@ func (s *TimestampStore) GetFinishedShifts(ctx context.Context, userID int64) ([
 	return shifts, nil
 }
 
-// Create inserts a new timestamp into the database.
+// Create godoc
+//
+//	@Summary		Creates a timestamp
+//	@Description	Inserts a new timestamp into the database
+//	@Tags			timestamps
+//	@Accept			json
+//	@Produce		json
+//	@Param			payload	body		Timestamp	true	"Timestamp information"
+//	@Success		201		{object}	Timestamp	"Timestamp created"
+//	@Failure		400		{object}	error
+//	@Failure		500		{object}	error
+//	@Router			/timestamps [post]
 func (s *TimestampStore) Create(ctx context.Context, timestamp *Timestamp) error {
 	// Define allowed previous states for each stamp type
 	validTransitions := map[string]string{
@@ -262,7 +303,17 @@ func (s *TimestampStore) Create(ctx context.Context, timestamp *Timestamp) error
 	return nil
 }
 
-// GetByID retrieves a timestamp by its ID.
+// GetByID godoc
+//
+//	@Summary		Retrieves a timestamp by ID
+//	@Description	Retrieves a timestamp by its ID
+//	@Tags			timestamps
+//	@Produce		json
+//	@Param			id	path		int	true	"Timestamp ID"
+//	@Success		200	{object}	Timestamp
+//	@Failure		404	{object}	error
+//	@Failure		500	{object}	error
+//	@Router			/timestamps/{id} [get]
 func (s *TimestampStore) GetByID(ctx context.Context, id int64) (*Timestamp, error) {
 	query := `
 		SELECT id, user_id, stamp_type, time, created_at, updated_at, version
@@ -319,7 +370,17 @@ func (s *TimestampStore) GetByID(ctx context.Context, id int64) (*Timestamp, err
 	return &timestamp, nil
 }
 
-// Delete removes a timestamp from the database by its ID.
+// Delete godoc
+//
+//	@Summary		Deletes a timestamp
+//	@Description	Removes a timestamp from the database by its ID
+//	@Tags			timestamps
+//	@Produce		json
+//	@Param			id	path		int	true	"Timestamp ID"
+//	@Success		204	{string}	string	"Timestamp deleted"
+//	@Failure		404	{object}	error
+//	@Failure		500	{object}	error
+//	@Router			/timestamps/{id} [delete]
 func (s *TimestampStore) Delete(ctx context.Context, timestampID int64) error {
 	query := `DELETE FROM timestamps WHERE id = ?`
 
@@ -341,7 +402,20 @@ func (s *TimestampStore) Delete(ctx context.Context, timestampID int64) error {
 	return nil
 }
 
-// Update modifies an existing timestamp in the database.
+// Update godoc
+//
+//	@Summary		Updates a timestamp
+//	@Description	Modifies an existing timestamp in the database
+//	@Tags			timestamps
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path		int			true	"Timestamp ID"
+//	@Param			payload	body		Timestamp	true	"Updated timestamp information"
+//	@Success		200		{object}	Timestamp
+//	@Failure		400		{object}	error
+//	@Failure		404		{object}	error
+//	@Failure		500		{object}	error
+//	@Router			/timestamps/{id} [patch]
 func (s *TimestampStore) Update(ctx context.Context, timestamp *Timestamp) error {
 	// SQL query to update a timestamp based on its ID and version, and to increment the version
 	query := `

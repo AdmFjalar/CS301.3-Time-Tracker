@@ -8,6 +8,19 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
+// New godoc
+//
+//	@Summary		Creates a new database connection
+//	@Description	Initializes a new database connection with the given parameters
+//	@Tags			database
+//	@Produce		json
+//	@Param			addr			query		string	true	"Database address"
+//	@Param			maxOpenConns	query		int		true	"Maximum open connections"
+//	@Param			maxIdleConns	query		int		true	"Maximum idle connections"
+//	@Param			maxIdleTime		query		string	true	"Maximum idle time"
+//	@Success		200				{object}	sql.DB	"Database connection"
+//	@Failure		500				{object}	error	"Internal server error"
+//	@Router			/database/new [get]
 func New(addr string, maxOpenConns, maxIdleConns int, maxIdleTime string) (*sql.DB, error) {
 	db, err := sql.Open("mysql", addr)
 	if err != nil {

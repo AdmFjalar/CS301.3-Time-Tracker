@@ -15,6 +15,8 @@ func init() {
 	}
 }
 
+// GetString retrieves the value of the environment variable named by the key.
+// If the variable is not present, it returns the fallback value.
 func GetString(key, fallback string) string {
 	val, ok := os.LookupEnv(key)
 	if !ok {
@@ -24,6 +26,8 @@ func GetString(key, fallback string) string {
 	return val
 }
 
+// GetInt retrieves the value of the environment variable named by the key and converts it to an integer.
+// If the variable is not present or cannot be converted, it returns the fallback value.
 func GetInt(key string, fallback int) int {
 	val, ok := os.LookupEnv(key)
 	if !ok {
@@ -38,6 +42,8 @@ func GetInt(key string, fallback int) int {
 	return valAsInt
 }
 
+// GetBool retrieves the value of the environment variable named by the key and converts it to a boolean.
+// If the variable is not present or cannot be converted, it returns the fallback value.
 func GetBool(key string, fallback bool) bool {
 	val, ok := os.LookupEnv(key)
 	if !ok {

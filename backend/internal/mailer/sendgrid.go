@@ -10,12 +10,14 @@ import (
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
 )
 
+// SendGridMailer is a struct that holds the SendGrid client, API key, and sender email address.
 type SendGridMailer struct {
 	fromEmail string
 	apiKey    string
 	client    *sendgrid.Client
 }
 
+// NewSendgrid creates a new SendGridMailer with the given API key and sender email address.
 func NewSendgrid(apiKey, fromEmail string) *SendGridMailer {
 	client := sendgrid.NewSendClient(apiKey)
 
@@ -26,6 +28,8 @@ func NewSendgrid(apiKey, fromEmail string) *SendGridMailer {
 	}
 }
 
+// Send sends an email using the specified template file, recipient email address, data, and sandbox mode.
+// It retries sending the email up to maxRetires times in case of failure.
 func (m *SendGridMailer) Send(templateFile, email string, data any, isSandbox bool) (int, error) {
 	from := mail.NewEmail(FromName, m.fromEmail)
 	to := mail.NewEmail("User", email)
