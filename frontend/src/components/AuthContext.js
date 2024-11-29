@@ -28,7 +28,7 @@ export const AuthProvider = ({ children }) => {
     if (tokenExpirationTimer) {
       clearTimeout(tokenExpirationTimer); // Clear any existing timer
     }
-    navigate('/login'); // Redirect to the login page
+    //navigate('/login'); // Redirect to the login page
   };
 
   // Monitor token expiration

@@ -12,8 +12,10 @@ const Sidebar = () => {
 
   useEffect(() => {
     if (!authToken) {
+      if (location.pathname === '/' || location.pathname === '/worked-time' || location.pathname === '/user-details') {
       navigate('/login');
-      return; // Stop execution if no authToken
+      return;
+      } // Stop execution if no authToken
     }
     // Fetch user data to determine their role
     const fetchUserRole = async () => {
